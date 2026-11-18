@@ -10,13 +10,14 @@ object Plantillas {
     data class Paquete(val nombre: String, val descripcion: String, val frases: List<String>)
 
     /** Para ordenar y agrupar la lista de paquetes en pantalla. */
-    val ordenCategorias = listOf("Tuyas", "Ventas y negocio", "Mentalidad", "Espiritual y calma", "Personal")
+    val ordenCategorias = listOf("Tuyas", "Brian Tracy", "Ventas y negocio", "Mentalidad", "Espiritual", "Personal")
 
     fun categoriaDe(nombrePaquete: String): String = when (nombrePaquete) {
         "Mis frases" -> "Tuyas"
-        "Vendedor tiburón", "Grabovoi — combo de ventas", "Abundancia y dinero" -> "Ventas y negocio"
-        "Motivación y disciplina", "Autoestima", "Enfoque y trabajo profundo", "Mentalidad estoica" -> "Mentalidad"
-        "Elevar la vibración", "Yo soy", "Jacobo Grinberg", "Gratitud y presencia", "Calma y respiración" -> "Espiritual y calma"
+        "Tracy 1 — Programa tu mente", "Tracy 2 — Tareas del día", "Tracy 3 — Ventas" -> "Brian Tracy"
+        "Vendedor tiburón", "Grabovoi — combo de ventas" -> "Ventas y negocio"
+        "Mentalidad estoica" -> "Mentalidad"
+        "Jacobo Grinberg" -> "Espiritual"
         else -> "Personal"
     }
 
@@ -329,114 +330,53 @@ object Plantillas {
         ),
 
         Paquete(
-            "Motivación y disciplina",
-            "Para los días en que no traes ganas de nada.",
+            "Tracy 1 — Programa tu mente",
+            "Ideas de Brian Tracy en palabras propias. Arranque del día: identidad, metas y autoimagen. Sigue con Tracy 2.",
             listOf(
-                "No estás esperando el momento correcto. El momento correcto es este, con todo y el cansancio, con todo y las ganas de no hacerlo. El momento perfecto no existe: existe el que aprovechas y el que dejas pasar.",
-                "La disciplina no es castigarte. La disciplina es acordarte de lo que quieres de verdad cuando el impulso de hoy te está jalando hacia otro lado. Es tu yo de mañana pidiéndote un favor.",
-                "Nadie viene a rescatarte, y está bien que sea así. Significa que no dependes de que alguien más se acuerde de ti, ni de que alguien más crea en ti. Puedes tú. Siempre pudiste.",
-                "Lo que hoy se te hace pesado, en tres meses va a ser lo normal. Tu cuerpo se acostumbra, tu cabeza se acostumbra. Lo único que necesita es que no lo sueltes justo cuando empieza a doler.",
-                "Hazlo cansado. Hazlo con flojera. Hazlo aunque lo hagas mal y aunque lo hagas a medias. Lo que cuenta es que hoy no rompiste la cadena. Mañana lo haces mejor.",
-                "Cada vez que cumples contigo, te vuelves un poco más confiable ante tus propios ojos. Y esa confianza es la que después usas para cosas más grandes. No estás haciendo ejercicio: te estás demostrando algo.",
-                "El que sigue cuando ya nadie está viendo es el que gana. No el más rápido ni el más fuerte, sino el que no se detuvo cuando dejó de haber aplausos, porque nunca los estuvo buscando."
+                "Programa tu mente antes de que el mundo la programe por ti. Lo que te repites una y otra vez, tu subconsciente lo acepta como orden y empieza a trabajar para cumplirlo. Hoy tú decides qué instrucciones le das.",
+                "Me gusto. Me gusto. Me gusto. Dilo con convicción, aunque al principio suene raro. Tu autoestima es el motor de todo lo demás: entre más te gustas y te respetas, mejor trabajas, mejor vendes y mejor tratas a los demás.",
+                "Yo soy responsable. Yo soy responsable de mi vida, de mis resultados y de cómo respondo a lo que me pasa. En el momento en que dejo de culpar a otros, recupero el control. Nadie viene a hacerlo por mí, y eso me hace libre.",
+                "Te conviertes en lo que piensas la mayor parte del tiempo. Si piensas en lo que quieres y en cómo conseguirlo, te acercas. Si piensas en lo que temes y en lo que te falta, también te acercas a eso. Elige con cuidado dónde pones la cabeza.",
+                "Tus metas se escriben en presente, en positivo y en primera persona. No digas quiero ganar más. Di: yo gano tal cantidad al mes. Tu mente no sabe distinguir entre lo que imaginas con fuerza y lo que vives, y empieza a moverse hacia eso.",
+                "Escribe tus diez metas cada día, sin mirar la lista de ayer. Lo que escribes a mano se graba más hondo. Las que se te olvidan no eran tan importantes; las que se repiten solas son las que de verdad quieres.",
+                "Si pudieras lograr una sola meta en las próximas veinticuatro horas, la que más impacto tendría en tu vida, ¿cuál sería? Esa es tu meta principal. Rodéala, escríbela arriba de todo y piensa en ella mañana, tarde y noche.",
+                "Visualízalo como si ya fuera tuyo. Mira la escena, siente la emoción, escucha lo que te dicen. Tu autoimagen manda: nunca vas a ganar de forma sostenida más de lo que crees que vales. Sube la imagen, y los resultados la siguen.",
+                "Actúa como si ya fueras la persona que quieres ser. Camina, habla y decide como ella. Si actúas así el tiempo suficiente, el sentimiento te alcanza y ya no estás actuando: ya eres.",
+                "Tu mente ya está programada para hoy. Ahora la idea tiene que volverse acción. Lo siguiente es decidir qué haces primero. Vamos a las tareas del día."
             )
         ),
 
         Paquete(
-            "Autoestima",
-            "Para dejar de hablarte como si fueras tu propio enemigo.",
+            "Tracy 2 — Tareas del día",
+            "Ideas de Brian Tracy en palabras propias. Priorizar y atacar primero lo difícil. Sigue con Tracy 3.",
             listOf(
-                "Mereces el mismo respeto que le das a los demás. Te desvives por no fallarle a nadie y contigo eres implacable. Trátate como tratas a la gente que quieres, aunque al principio te sienta raro.",
-                "Tu valor no depende de lo que produjiste hoy. No eres una máquina que vale por su rendimiento. Vales dormido, vales cansado, vales el día que no lograste nada. Eso no se negocia con nadie.",
-                "Háblate como le hablarías a alguien que amas. Si un amigo te contara lo que tú te dices en la cabeza, no lo tolerarías. Entonces no lo toleres cuando la voz es la tuya.",
-                "Estás aprendiendo, y aprender se ve exactamente así: torpe, lento, con retrocesos. Eso no es lo mismo que estar fallando. Nadie que esté cambiando de verdad lo hace de forma limpia.",
-                "Tienes derecho a ocupar espacio. A decir lo que piensas, a pedir lo que necesitas, a poner un límite sin dar diez explicaciones. No estás molestando por existir.",
-                "Lo que sientes es válido aunque nadie más lo entienda, aunque no sepas explicarlo, aunque te digan que estás exagerando. No necesitas la aprobación de nadie para tener derecho a tu propia experiencia.",
-                "No tienes que ser perfecto para ser suficiente. La versión tuya que exiges es una que nunca ha existido y que nadie te pidió. La que sí existe, la de hoy, ya alcanza."
+                "Cómete primero el sapo. Si tienes que hacer algo desagradable hoy, hazlo a primera hora. Y si tienes dos sapos, empieza por el más feo. Después de eso, lo demás del día se siente ligero.",
+                "Planea tu día la noche anterior. Haz la lista antes de dormir y tu subconsciente trabaja en ella mientras descansas. Cada minuto que inviertes en planear te ahorra diez en ejecutar.",
+                "Usa el método A B C D E. A es lo que debes hacer, con consecuencias serias si no lo haces. B es lo que deberías hacer. C es lo que estaría bien hacer. D es lo que puedes delegar. E es lo que puedes eliminar. Nunca hagas una B mientras quede una A pendiente.",
+                "El veinte por ciento de tus tareas produce el ochenta por ciento de tus resultados. De una lista de diez, dos valen más que las otras ocho juntas. Encuentra esas dos y trabaja en ellas primero.",
+                "Pregúntate: ¿cuál es el uso más valioso de mi tiempo justo ahora? Hazte esa pregunta cada vez que termines algo, y cada vez que te distraigas. La respuesta siempre te regresa a lo importante.",
+                "No puedes hacerlo todo, pero sí puedes hacer lo más importante. Procrastina a propósito las tareas de poco valor. Decir que no a lo pequeño es lo que te deja tiempo para lo grande.",
+                "Una vez que empiezas tu tarea principal, termínala. No brinques a otra cosa. Cada vez que la dejas y la retomas, pagas otra vez el costo de arrancar. Concentración total hasta acabar.",
+                "Si una tarea te pesa, pártela en pedazos chicos y haz solo el primero. Al sapo grande se le come a mordidas. Avanzar un poco te da el empuje para el siguiente pedazo.",
+                "Trabaja con sentido de urgencia. Muévete rápido en lo importante, decide rápido y corrige sobre la marcha. La gente que logra mucho no es más lista: simplemente se mueve más rápido hacia lo que importa.",
+                "Terminar una tarea importante libera energía. Esa sensación de logro es combustible para lo siguiente. Hoy tu tarea más importante probablemente es vender. Vamos a eso."
             )
         ),
 
         Paquete(
-            "Elevar la vibración",
-            "Para cambiar tu estado interno en el momento.",
+            "Tracy 3 — Ventas",
+            "Ideas de Brian Tracy en palabras propias. Prospectar, presentar, cerrar y dar seguimiento. Cierra la secuencia.",
             listOf(
-                "Respira profundo y suelta despacio. Todo se acomoda desde la calma, nunca desde la prisa. Lo que decidas apurado lo vas a tener que corregir después; lo que decidas en paz se sostiene solo.",
-                "Estás en sintonía con lo bueno que ya viene en camino. No tienes que jalarlo ni forzarlo. Tu único trabajo es no cerrarte, no amargarte, no ponerte en el lugar donde no puede encontrarte.",
-                "Suelta lo pesado. Eso que traes en el pecho desde la mañana no es tuyo, o si lo fue ya cumplió su función. No lo tienes que cargar todo el día para demostrar que te importa.",
-                "Tu energía abre puertas antes de que digas una palabra. La gente siente cómo llegas mucho antes de escuchar lo que traes que decir. Cuida con qué entras a los lugares.",
-                "Donde pones tu atención, ahí crece la vida. Lo que revisas todos los días se hace grande, sea la queja o sea el plan. Escoge bien qué estás regando con tu tiempo.",
-                "Agradece antes de tener. Así se llama la fe: dar las gracias por lo que todavía no ves, actuar como si ya viniera, y sostener esa certeza cuando nada afuera te la confirma.",
-                "Estás alineado. Estás en paz. Estás exactamente en el lugar donde tienes que estar hoy, aunque no sea donde querías llegar. El camino no se ve completo desde la mitad."
-            )
-        ),
-
-        Paquete(
-            "Yo soy",
-            "Decretos en primera persona y en tiempo presente.",
-            listOf(
-                "Yo soy la fuente en completa expresión, aquí y ahora. No estoy esperando permiso, no estoy esperando el momento. Lo que soy ya está sucediendo mientras respiro.",
-                "Yo soy salud, fuerza y energía en cada célula de mi cuerpo. Mi cuerpo sabe repararse, sabe sostenerme, sabe llevarme a donde tengo que ir. Confío en él y lo cuido.",
-                "Yo soy abundancia, y todo lo que necesito llega a tiempo. Ni antes ni después. No me falta, no me sobra: llega justo cuando lo puedo recibir y sostener.",
-                "Yo soy claridad. Sé qué hacer y lo hago. Cuando no lo sé, me quedo quieto hasta que se aclara, y esa quietud también es parte de saber.",
-                "Yo soy paz aun en medio del ruido. No necesito que todo se calme afuera para calmarme adentro. La paz no me la da el entorno, me la doy yo.",
-                "Yo soy el que decide quién voy a ser hoy. No lo que me pasó, no lo que hice antes, no lo que otros esperan. Hoy elijo otra vez, y puedo elegir distinto.",
-                "Yo soy capaz de sostener todo lo que estoy pidiendo. No pido lo que no podría cuidar. Me estoy preparando para recibirlo y para no perderlo cuando llegue."
-            )
-        ),
-
-        Paquete(
-            "Abundancia y dinero",
-            "Para trabajar tu relación con el dinero.",
-            listOf(
-                "El dinero llega a mis manos y fluye sin esfuerzo. No lo persigo con angustia ni lo agarro con miedo. Entra, hace su trabajo, y vuelve a entrar porque sé moverlo.",
-                "Merezco cobrar bien por lo que sé hacer. Lo que ofrezco tiene valor y no tengo que disculparme por ponerle precio. Regalar mi trabajo no me hace más noble, me hace más pobre.",
-                "Hay suficiente. No estoy compitiendo por migajas ni peleándome un lugar que ya estaba ocupado. El mundo es más grande que el miedo que me contaron.",
-                "Cada peso que administro bien atrae más. No se trata de cuánto entra, sino de qué hago con lo que entra. La abundancia empieza en el orden, no en la cantidad.",
-                "Mi trabajo resuelve problemas reales, y por eso se paga. No estoy pidiendo un favor cuando cobro. Estoy intercambiando algo que sirve por algo que necesito.",
-                "Me abro a recibir de formas que todavía no imagino. No tiene que llegar por donde yo creo. Suelto el control sobre el cómo y me quedo firme en el qué.",
-                "La abundancia empieza con lo que hago hoy, no mañana. No con el negocio que voy a poner, no cuando se acomoden las cosas. Con lo de hoy, con lo que tengo en la mano ahorita."
-            )
-        ),
-
-        Paquete(
-            "Gratitud y presencia",
-            "Para aterrizar y dejar de correr.",
-            listOf(
-                "Estoy aquí. Esto es lo único que existe. El resto es memoria o es imaginación, y ninguna de las dos está pasando ahora. Vuelve al cuerpo, vuelve a la respiración, vuelve a este cuarto.",
-                "Gracias por el cuerpo que me está sosteniendo ahorita. Late sin que se lo pida, respira mientras yo pienso en otras cosas, me carga todos los días sin quejarse. Hoy lo reconozco.",
-                "Gracias por la gente que me quiere, aunque no siempre sepa demostrarlo y aunque yo no siempre sepa recibirlo. No estoy tan solo como se siente en los días malos.",
-                "Nada de lo que estoy persiguiendo vale más que este momento. Voy a llegar y va a haber otra cosa que perseguir. Si no aprendo a estar aquí, no voy a saber estar allá tampoco.",
-                "Ya tengo cosas que alguna vez pedí con desesperación. Se me olvidan porque se volvieron normales. Hoy me acuerdo de al menos una y le doy las gracias como el día que la pedí.",
-                "Respira. Suelta los hombros. Afloja la mandíbula. Aquí, en este segundo, no falta nada. El problema que traes en la cabeza no está sucediendo en esta habitación.",
-                "El presente es el único lugar donde puedo actuar. En el pasado ya no alcanzo nada y en el futuro todavía no llego. Todo mi poder está en lo que haga en los próximos cinco minutos."
-            )
-        ),
-
-        Paquete(
-            "Enfoque y trabajo profundo",
-            "Para volver a la tarea justo después de la frase.",
-            listOf(
-                "Una sola cosa. La que importa. Ahora. No la lista completa, no todo el proyecto: la siguiente acción concreta. Escríbela si hace falta y ve por ella.",
-                "El teléfono no se va a ir a ningún lado. La concentración sí. Tardas veinte minutos en recuperarla y la pierdes en dos segundos. Piensa si vale la pena ese cambio.",
-                "Terminar vale más que empezar bonito. Un trabajo entregado a medias supera a uno perfecto que sigue en tu cabeza. Lo terminado se puede mejorar; lo que no existe, no.",
-                "No busques la idea perfecta. Avanza con la que tienes, aunque sepas que es mejorable. La claridad llega haciendo, no pensando: se te va a aclarar a la mitad del camino.",
-                "Dos horas enfocado valen más que ocho distraído. No midas el día por las horas que estuviste sentado, sino por los ratos en que de verdad estuviste ahí.",
-                "Si no sabes qué sigue, escribe el paso más chico que se te ocurra. Tan chico que dé risa. La parálisis casi siempre es que el siguiente paso lo estás pensando demasiado grande.",
-                "El trabajo profundo se defiende. Nadie lo va a defender por ti, ni tu familia, ni tus clientes, ni tus notificaciones. Si no cierras la puerta tú, no se cierra."
-            )
-        ),
-
-        Paquete(
-            "Calma y respiración",
-            "Para bajar revoluciones cuando traes el nudo.",
-            listOf(
-                "Inhala contando cuatro. Sostén cuatro. Exhala contando seis. Otra vez. La exhalación larga es la que le avisa al cuerpo que puede bajar la guardia. Dale tres rondas antes de seguir.",
-                "La ansiedad es prisa, nada más. Es el cuerpo tratando de resolver hoy algo que no toca hoy. No hay prisa. Lo urgente casi nunca es tan urgente como se siente.",
-                "Puedes sentir miedo y aun así seguir. Nadie hace las cosas importantes con el miedo apagado. Lo haces con el miedo puesto, y así cuenta igual, o cuenta más.",
-                "Suelta la mandíbula. Baja los hombros. Afloja las manos. Llevas horas apretando cosas que no hacía falta apretar, y tu cuerpo se cansa de sostener esa tensión.",
-                "Esto también va a pasar, como pasó todo lo anterior. Ninguna de las cosas que te tuvieron así antes sigue teniéndote así hoy. Se te olvida porque cuando duele parece permanente.",
-                "No tienes que resolverlo todo hoy. Hoy nada más te toca la parte de hoy. Lo demás va a seguir ahí mañana y vas a tener más fuerza para verlo.",
-                "Tu cuerpo sabe calmarse solo, es lo que hace todo el tiempo sin que te enteres. Nada más dale un minuto sin interrumpirlo, sin pensarle, sin exigirle que sea rápido."
+                "Vender es una habilidad, y toda habilidad se aprende. Nadie nace vendedor. Los mejores vendedores fueron un día los peores, y se volvieron buenos practicando y estudiando un poco cada día.",
+                "El veinte por ciento de los vendedores gana el ochenta por ciento del dinero. La diferencia entre estar arriba y estar abajo no es enorme: son unas pocas habilidades clave, hechas un poco mejor. Mejora una de ellas esta semana.",
+                "Tu trabajo más importante es prospectar. Pasa más tiempo frente a clientes con capacidad de comprar. Cuenta tus llamadas, tus citas y tus presentaciones: lo que mides, mejora.",
+                "Antes de presentar, pregunta. El cliente no compra un producto, compra lo que el producto hace por él. Descubre qué quiere lograr y qué le duele, y después muéstrale cómo lo tuyo le resuelve exactamente eso.",
+                "La gente compra con la emoción y después lo justifica con la lógica. Habla de cómo se va a sentir, de lo que va a ganar y de lo que va a dejar de perder. Después dale los números para que esté tranquilo con su decisión.",
+                "La confianza vende. El cliente necesita sentir que tú quieres ayudarlo, no solo cobrarle. Escucha más de lo que hablas. Entre más hablas tú de él, y menos de ti, más confía.",
+                "Las objeciones son señales de interés. Cuando el cliente pone un pero, está pidiendo más información para poder decir que sí. Agradécela, aclárala y confirma que quedó resuelta.",
+                "Pide la venta. Muchos vendedores hacen todo bien y al final no se atreven a preguntar. Pregunta con seguridad: ¿empezamos? Y después de preguntar, guarda silencio. El primero que habla, pierde.",
+                "Cuida a cada cliente como si fuera el único. Un cliente contento te vuelve a comprar y te recomienda. Las referencias son las ventas más fáciles que vas a cerrar: pídelas siempre.",
+                "Aprende algo nuevo de ventas cada día. Escucha audios en el carro y lee treinta minutos diarios. El que invierte en su mente gana más. Mañana programamos la mente otra vez, y el ciclo sigue."
             )
         ),
 
