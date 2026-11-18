@@ -11,6 +11,8 @@ import android.os.Handler
 import android.os.Looper
 import android.os.PowerManager
 import android.provider.Settings
+import android.speech.tts.TextToSpeech
+import android.speech.tts.Voice
 import android.text.InputType
 import android.view.Gravity
 import android.view.View
@@ -34,9 +36,11 @@ class MainActivity : AppCompatActivity() {
     private lateinit var txtEstado: TextView
     private lateinit var txtDesglose: TextView
     private lateinit var edAviso: EditText
+    private lateinit var edDescanso: EditText
     private lateinit var chkSegundo: CheckBox
     private lateinit var chkDiez: CheckBox
     private lateinit var chkVibrar: CheckBox
+    private lateinit var txtVoz: TextView
     private lateinit var listaBloques: LinearLayout
     private lateinit var listaFrases: LinearLayout
     private lateinit var btnEmpezar: Button
@@ -48,6 +52,9 @@ class MainActivity : AppCompatActivity() {
     private var indiceAudio = -1
     private var perfilesEnPantalla = listOf<Perfil>()
     private var armandoSpinner = false
+
+    private var tts: TextToSpeech? = null
+    private var ttsListo = false
 
     private val reloj = Handler(Looper.getMainLooper())
 
@@ -80,13 +87,22 @@ class MainActivity : AppCompatActivity() {
         txtEstado = findViewById(R.id.txtEstado)
         txtDesglose = findViewById(R.id.txtDesglose)
         edAviso = findViewById(R.id.edAviso)
+        edDescanso = findViewById(R.id.edDescanso)
         chkSegundo = findViewById(R.id.chkSegundo)
         chkDiez = findViewById(R.id.chkDiez)
         chkVibrar = findViewById(R.id.chkVibrar)
+        txtVoz = findViewById(R.id.txtVoz)
         listaBloques = findViewById(R.id.listaBloques)
         listaFrases = findViewById(R.id.listaFrases)
         btnEmpezar = findViewById(R.id.btnEmpezar)
         spPerfil = findViewById(R.id.spPerfil)
+
+        tts = TextToSpeech(this) { estado ->
+            if (estado == TextToSpeech.SUCCESS) {
+                ttsListo = true
+                runOnUiThread { actualizarTxtVoz() }
+            }
+        }
 
         armarSpinner()
         cargarPerfil()
@@ -103,7 +119,10 @@ class MainActivity : AppCompatActivity() {
         findViewById<Button>(R.id.btnRenombrarPerfil).setOnClickListener { renombrarPerfil() }
         findViewById<Button>(R.id.btnBorrarPerfil).setOnClickListener { borrarPerfil() }
         findViewById<Button>(R.id.btnRutina).setOnClickListener { elegirRutina() }
+        findViewById<Button>(R.id.btnGuardarLista).setOnClickListener { guardarListaPropia() }
+        findViewById<Button>(R.id.btnCargarLista).setOnClickListener { abrirMisListas() }
         findViewById<Button>(R.id.btnPaquete).setOnClickListener { elegirPaquete() }
+        findViewById<Button>(R.id.btnVoz).setOnClickListener { elegirVoz() }
         findViewById<Button>(R.id.btnAgregarFrase).setOnClickListener {
             recogerTextosDeFrases()
             frases.add(Frase("f" + System.currentTimeMillis(), "", null))
@@ -129,6 +148,11 @@ class MainActivity : AppCompatActivity() {
         super.onPause()
         reloj.removeCallbacksAndMessages(null)
         guardar(false)
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        try { tts?.shutdown() } catch (e: Exception) { }
     }
 
     private val refresco = object : Runnable {
@@ -170,12 +194,14 @@ class MainActivity : AppCompatActivity() {
 
     private fun cargarPerfil() {
         edAviso.setText(Config.avisoFrases(this).toString())
+        edDescanso.setText(Config.descansoSeg(this).toString())
         chkSegundo.isChecked = Config.cuentaSegundo(this)
         chkDiez.isChecked = Config.avisoDiez(this)
         chkVibrar.isChecked = Config.vibrar(this)
         frases = ArrayList(Config.frases(this))
         pintarBloques()
         pintarFrases()
+        actualizarTxtVoz()
         txtDesglose.text = Config.desgloseHoy(this)
     }
 
@@ -229,36 +255,100 @@ class MainActivity : AppCompatActivity() {
 
     // ---------------------------------------------------------------- plantillas
 
-    private fun elegirRutina() {
-        val nombres = Plantillas.rutinas.map { it.nombre + "\n" + it.descripcion }.toTypedArray()
-        AlertDialog.Builder(this)
-            .setTitle("Rutinas listas")
-            .setItems(nombres) { _, i ->
-                val r = Plantillas.rutinas[i]
-                Config.guardarBloques(this, r.bloques)
-                pintarBloques()
-                aviso("Rutina aplicada: " + r.nombre)
+    private class Fila(val cabecera: String?, val titulo: String, val sub: String, val indice: Int)
+
+    /** Lista con secciones: encabezado dorado, título en blanco y explicación gris debajo. */
+    private fun mostrarListaBonita(titulo: String, filas: List<Fila>, alElegir: (Int) -> Unit) {
+        val dp = resources.displayMetrics.density
+        val adaptador = object : android.widget.BaseAdapter() {
+            override fun getCount() = filas.size
+            override fun getItem(position: Int) = filas[position]
+            override fun getItemId(position: Int) = position.toLong()
+            override fun getViewTypeCount() = 2
+            override fun getItemViewType(position: Int) = if (filas[position].cabecera != null) 0 else 1
+            override fun isEnabled(position: Int) = filas[position].cabecera == null
+            override fun getView(position: Int, convertView: View?, parent: ViewGroup?): View {
+                val f = filas[position]
+                val caja = LinearLayout(this@MainActivity)
+                caja.orientation = LinearLayout.VERTICAL
+                if (f.cabecera != null) {
+                    caja.setPadding((18 * dp).toInt(), (16 * dp).toInt(), (18 * dp).toInt(), (6 * dp).toInt())
+                    val t = TextView(this@MainActivity)
+                    t.text = f.cabecera.uppercase()
+                    t.setTextColor(0xFFE5A93C.toInt())
+                    t.textSize = 12f
+                    t.letterSpacing = 0.1f
+                    caja.addView(t)
+                } else {
+                    caja.setPadding((18 * dp).toInt(), (10 * dp).toInt(), (18 * dp).toInt(), (10 * dp).toInt())
+                    val t = TextView(this@MainActivity)
+                    t.text = f.titulo
+                    t.setTextColor(0xFFF0E7DC.toInt())
+                    t.textSize = 16f
+                    t.setTypeface(t.typeface, android.graphics.Typeface.BOLD)
+                    caja.addView(t)
+                    val d = TextView(this@MainActivity)
+                    d.text = f.sub
+                    d.setTextColor(0xFF9C8FAE.toInt())
+                    d.textSize = 13f
+                    caja.addView(d)
+                }
+                return caja
             }
+        }
+        val lista = android.widget.ListView(this)
+        lista.setBackgroundColor(0xFF16101F.toInt())
+        lista.divider = android.graphics.drawable.ColorDrawable(0xFF2A2038.toInt())
+        lista.dividerHeight = 1
+        lista.adapter = adaptador
+        val dialogo = AlertDialog.Builder(this)
+            .setTitle(titulo)
+            .setView(lista)
             .setNegativeButton("Cancelar", null)
-            .show()
+            .create()
+        lista.setOnItemClickListener { _, _, pos, _ ->
+            val f = filas[pos]
+            if (f.cabecera == null) {
+                dialogo.dismiss()
+                alElegir(f.indice)
+            }
+        }
+        dialogo.show()
+    }
+
+    private fun elegirRutina() {
+        val filas = Plantillas.rutinas.mapIndexed { i, r ->
+            Fila(null, r.nombre, r.descripcion, i)
+        }
+        mostrarListaBonita("Rutinas listas", filas) { i ->
+            val r = Plantillas.rutinas[i]
+            Config.guardarBloques(this, r.bloques)
+            pintarBloques()
+            aviso("Rutina aplicada: " + r.nombre)
+        }
     }
 
     private fun elegirPaquete() {
-        val nombres = Plantillas.paquetes.map { it.nombre + "\n" + it.descripcion }.toTypedArray()
-        AlertDialog.Builder(this)
-            .setTitle("Paquetes de frases")
-            .setItems(nombres) { _, i ->
-                val paq = Plantillas.paquetes[i]
-                AlertDialog.Builder(this)
-                    .setTitle(paq.nombre)
-                    .setMessage("¿Reemplazar tus frases actuales o agregar estas al final?")
-                    .setPositiveButton("Reemplazar") { _, _ -> aplicarPaquete(paq, false) }
-                    .setNeutralButton("Agregar") { _, _ -> aplicarPaquete(paq, true) }
-                    .setNegativeButton("Cancelar", null)
-                    .show()
+        val filas = ArrayList<Fila>()
+        for (cat in Plantillas.ordenCategorias) {
+            val delGrupo = Plantillas.paquetes.withIndex().filter { Plantillas.categoriaDe(it.value.nombre) == cat }
+            if (delGrupo.isEmpty()) continue
+            filas.add(Fila(cat, "", "", -1))
+            for ((i, paq) in delGrupo) {
+                filas.add(Fila(null, paq.nombre, paq.descripcion + "\n" + paq.frases.size + (if (paq.frases.size == 1) " frase" else " frases"), i))
             }
-            .setNegativeButton("Cancelar", null)
-            .show()
+        }
+        mostrarListaBonita("Paquetes de frases", filas) { i ->
+            val paq = Plantillas.paquetes[i]
+            val ejemplo = paq.frases[0].let { if (it.length > 140) it.substring(0, 140) + "…" else it }
+            AlertDialog.Builder(this)
+                .setTitle(paq.nombre)
+                .setMessage("Primera frase:\n«" + ejemplo + "»\n\n¿Reemplazar tus frases actuales o agregar estas al final?")
+                .setPositiveButton("Reemplazar") { _, _ -> aplicarPaquete(paq, false) }
+                .setNeutralButton("Agregar") { _, _ -> aplicarPaquete(paq, true) }
+                .setNegativeButton("Cancelar", null)
+                .show()
+        }
     }
 
     private fun aplicarPaquete(paq: Plantillas.Paquete, agregar: Boolean) {
@@ -269,6 +359,171 @@ class MainActivity : AppCompatActivity() {
         Config.guardarFrases(this, frases)
         pintarFrases()
         aviso(paq.nombre + " listo")
+    }
+
+    // ---------------------------------------------------------------- voz
+
+    private fun elegirVoz() {
+        val t = tts
+        if (t == null || !ttsListo) {
+            aviso("Espera un segundo, cargando las voces del teléfono…")
+            return
+        }
+
+        val todas = try { t.voices } catch (e: Exception) { null }
+        if (todas == null) {
+            aviso("No se pudieron leer las voces de este teléfono")
+            return
+        }
+
+        // Todas las voces en español del teléfono (locales y de red), para que
+        // aparezcan al menos varias opciones si el teléfono las tiene. Primero
+        // las latinoamericanas, España al final, y dentro de cada grupo,
+        // primero las que no necesitan internet.
+        var disponibles = todas.filter { it.locale?.language == "es" }
+            .sortedWith(
+                compareBy(
+                    { it.locale?.country == "ES" },
+                    { it.isNetworkConnectionRequired },
+                    { it.locale?.country ?: "" },
+                    { it.name }
+                )
+            )
+
+        if (disponibles.isEmpty()) {
+            aviso("Este teléfono no tiene voces en español instaladas")
+            return
+        }
+
+        val opciones = ArrayList<String>()
+        opciones.add("Automática (recomendada)")
+        for (v in disponibles) opciones.add(nombreAmigable(v))
+
+        val actual = Config.vozElegida(this)
+        val marcada = disponibles.indexOfFirst { it.name == actual } + 1 // -1+1=0 si es automática
+
+        AlertDialog.Builder(this)
+            .setTitle("Elegir voz")
+            .setSingleChoiceItems(opciones.toTypedArray(), marcada) { _, i ->
+                if (i == 0) {
+                    Config.guardarVoz(this, null)
+                    try { t.voice = t.defaultVoice } catch (e: Exception) { }
+                    actualizarTxtVoz()
+                    aviso("Voz automática")
+                } else {
+                    val v = disponibles[i - 1]
+                    Config.guardarVoz(this, v.name)
+                    actualizarTxtVoz()
+                    try {
+                        t.voice = v
+                        t.speak("Así vas a escuchar los avisos de Pulso.", TextToSpeech.QUEUE_FLUSH, null, "prueba_voz")
+                    } catch (e: Exception) { }
+                }
+            }
+            .setPositiveButton("Listo", null)
+            .show()
+    }
+
+    private fun nombreAmigable(v: Voice): String {
+        val loc = v.locale
+        val pais = when (loc?.country) {
+            "MX" -> "México"
+            "ES" -> "España"
+            "US" -> "Estados Unidos"
+            "AR" -> "Argentina"
+            "CO" -> "Colombia"
+            "CL" -> "Chile"
+            "PE" -> "Perú"
+            "VE" -> "Venezuela"
+            "419" -> "Latinoamérica"
+            else -> loc?.displayCountry ?: ""
+        }
+        val calidad = when {
+            v.quality >= Voice.QUALITY_VERY_HIGH -> "muy alta calidad"
+            v.quality >= Voice.QUALITY_HIGH -> "alta calidad"
+            v.quality >= Voice.QUALITY_NORMAL -> "calidad normal"
+            else -> "calidad baja"
+        }
+        val red = if (v.isNetworkConnectionRequired) " · necesita internet" else ""
+        return "Español" + (if (pais.isNotBlank()) " ($pais)" else "") + " · " + calidad + red
+    }
+
+    private fun actualizarTxtVoz() {
+        val guardada = Config.vozElegida(this)
+        if (guardada == null) {
+            txtVoz.text = "Voz actual: automática"
+            return
+        }
+        val v = try { tts?.voices?.firstOrNull { it.name == guardada } } catch (e: Exception) { null }
+        txtVoz.text = "Voz actual: " + (if (v != null) nombreAmigable(v) else "elegida (esta ya no está instalada)")
+    }
+
+    // ---------------------------------------------------------------- mis listas
+
+    private fun guardarListaPropia() {
+        recogerTextosDeFrases()
+        val utiles = frases.filter { it.texto.isNotBlank() || it.audio != null }
+        if (utiles.isEmpty()) {
+            aviso("No hay frases que guardar")
+            return
+        }
+        val campo = EditText(this)
+        campo.hint = "Nombre de la lista"
+        campo.setTextColor(0xFFF0E7DC.toInt())
+        campo.setHintTextColor(0xFF7A6E8A.toInt())
+        AlertDialog.Builder(this)
+            .setTitle("Guardar mi lista")
+            .setMessage("Se guardan " + utiles.size + " frases con su audio. Podrás usarla en cualquier perfil.")
+            .setView(campo)
+            .setPositiveButton("Guardar") { _, _ ->
+                val nombre = campo.text.toString().trim()
+                if (nombre.isBlank()) { aviso("Ponle un nombre"); return@setPositiveButton }
+                Config.guardarLista(this, nombre, utiles)
+                aviso("Lista guardada: " + nombre)
+            }
+            .setNegativeButton("Cancelar", null)
+            .show()
+    }
+
+    private fun abrirMisListas() {
+        val listas = Config.misListas(this)
+        if (listas.isEmpty()) {
+            AlertDialog.Builder(this)
+                .setTitle("Mis listas")
+                .setMessage("Todavía no guardas ninguna. Arma tus frases y dale a Guardar esta lista.")
+                .setPositiveButton("Entendido", null)
+                .show()
+            return
+        }
+        val nombres = listas.map { it.nombre + "\n" + it.frases.size + " frases" }.toTypedArray()
+        AlertDialog.Builder(this)
+            .setTitle("Mis listas")
+            .setItems(nombres) { _, i -> accionesDeLista(listas[i]) }
+            .setNegativeButton("Cancelar", null)
+            .show()
+    }
+
+    private fun accionesDeLista(lista: ListaGuardada) {
+        AlertDialog.Builder(this)
+            .setTitle(lista.nombre)
+            .setMessage("¿Qué quieres hacer con esta lista?")
+            .setPositiveButton("Reemplazar") { _, _ -> usarLista(lista, false) }
+            .setNeutralButton("Agregar") { _, _ -> usarLista(lista, true) }
+            .setNegativeButton("Borrar lista") { _, _ ->
+                Config.borrarLista(this, lista.nombre)
+                aviso("Lista borrada")
+            }
+            .show()
+    }
+
+    private fun usarLista(lista: ListaGuardada, agregar: Boolean) {
+        recogerTextosDeFrases()
+        val base = System.currentTimeMillis()
+        val copia = lista.frases.mapIndexed { i, f -> Frase("f" + (base + i), f.texto, f.audio) }
+        if (agregar) frases.addAll(copia) else frases = ArrayList(copia)
+        Config.guardarFrases(this, frases)
+        pintarFrases()
+        aviso(lista.nombre + " lista")
     }
 
     // ---------------------------------------------------------------- bloques
@@ -404,12 +659,14 @@ class MainActivity : AppCompatActivity() {
 
     private fun guardar(conAviso: Boolean) {
         val av = edAviso.text.toString().toIntOrNull() ?: 4
+        val desc = edDescanso.text.toString().toIntOrNull() ?: Config.DESCANSO_DEFECTO
         Config.guardarNumeros(
             this,
             if (av > 0) av else 4,
             chkSegundo.isChecked,
             chkDiez.isChecked,
-            chkVibrar.isChecked
+            chkVibrar.isChecked,
+            if (desc >= 0) desc else Config.DESCANSO_DEFECTO
         )
 
         val originales = Config.bloques(this)

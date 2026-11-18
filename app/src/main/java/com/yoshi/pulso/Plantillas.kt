@@ -2,15 +2,133 @@ package com.yoshi.pulso
 
 /**
  * Plantillas listas. Una rutina llena los tres bloques de golpe.
- * Un paquete de frases reemplaza la lista de frases del perfil.
+ * Un paquete de frases reemplaza o agrega a la lista de frases del perfil.
  */
 object Plantillas {
 
     data class Rutina(val nombre: String, val descripcion: String, val bloques: List<Bloque>)
     data class Paquete(val nombre: String, val descripcion: String, val frases: List<String>)
 
+    /** Para ordenar y agrupar la lista de paquetes en pantalla. */
+    val ordenCategorias = listOf("Tuyas", "Ventas y negocio", "Mentalidad", "Espiritual y calma", "Personal")
+
+    fun categoriaDe(nombrePaquete: String): String = when (nombrePaquete) {
+        "Mis frases" -> "Tuyas"
+        "Vendedor tiburón", "Grabovoi — combo de ventas", "Abundancia y dinero" -> "Ventas y negocio"
+        "Motivación y disciplina", "Autoestima", "Enfoque y trabajo profundo", "Mentalidad estoica" -> "Mentalidad"
+        "Elevar la vibración", "Yo soy", "Jacobo Grinberg", "Gratitud y presencia", "Calma y respiración" -> "Espiritual y calma"
+        else -> "Personal"
+    }
+
+    /**
+     * Cinco ejercicios por bloque, 45 segundos cada uno. Con 15 segundos
+     * de descanso automático entre ellos, un bloque completo de cinco
+     * ejercicios llena exactamente los cinco minutos (5 × 60 = 300).
+     */
     private fun b(nombre: String, vararg ejs: String): Bloque =
-        Bloque(nombre, ejs.map { Ejercicio(it, 100) })
+        Bloque(nombre, ejs.map { Ejercicio(it, 45, explicacionDe(it)) })
+
+    // ------------------------------------------------------------------ explicaciones
+
+    /**
+     * Cómo se hace cada ejercicio, en una frase corta que la app dice en
+     * voz alta antes de que empiece (durante el descanso previo, o al
+     * arrancar si es el primero del bloque). Se busca por nombre, sin
+     * importar mayúsculas ni espacios de sobra. Si un ejercicio no está
+     * aquí, la app simplemente dice su nombre, sin explicación.
+     */
+    private val explicaciones: Map<String, String> = mapOf(
+        "abdominales con los pies" to "Acostado, pies apoyados y rodillas dobladas, sube el torso hacia las rodillas sin jalar el cuello.",
+        "apertura de pecho en marco de puerta" to "Antebrazos en el marco de una puerta, da un paso al frente y deja que el pecho se abra.",
+        "apertura de pecho en pared" to "De espaldas a una pared, abre los brazos a los lados y empuja el pecho hacia adelante.",
+        "brincos altos" to "Desde sentadilla, salta lo más alto que puedas y aterriza suave doblando las rodillas.",
+        "brincos de tijera" to "Salta abriendo brazos y piernas a la vez, y ciérralos al aterrizar.",
+        "burpees" to "Baja a sentadilla, manos al piso, avienta los pies atrás en plancha, regresa y salta arriba.",
+        "burpees a ritmo lento" to "El mismo burpee, pero controlado: sin prisa, cuidando cada paso del movimiento.",
+        "colgarse o estirarse hacia arriba" to "Estira los brazos hacia arriba lo más que puedas, como si te fueras a colgar de algo.",
+        "círculos de brazos sostenidos" to "Brazos extendidos a los lados, haz círculos pequeños y constantes sin bajarlos.",
+        "círculos de cadera" to "De pie, manos en la cintura, gira la cadera en círculos amplios, mitad para cada lado.",
+        "círculos de hombro" to "Brazos relajados, haz círculos con los hombros hacia atrás y luego hacia adelante.",
+        "círculos de muñeca" to "Extiende los brazos y gira las muñecas en círculos, hacia un lado y luego al otro.",
+        "desplante con rotación" to "Da un paso al frente en desplante y gira el torso hacia la pierna de enfrente.",
+        "desplante estático por lado" to "Un pie muy adelante y otro atrás, bajas y subes sin cambiar de pierna.",
+        "desplantes alternados" to "Paso al frente, bajas hasta que ambas rodillas hagan noventa grados, alternando pierna.",
+        "desplantes caminando" to "Ve caminando hacia adelante alternando desplantes con cada paso.",
+        "desplantes con pausa" to "Baja al desplante y aguanta un segundo abajo antes de subir.",
+        "elevación de piernas" to "Acostado boca arriba, sube las piernas rectas hasta el techo y bájalas sin tocar el piso.",
+        "elevación de talones" to "De pie, sube los talones despacio hasta pararte de puntas y baja controlado.",
+        "elevación de talones parado" to "Sube de puntas y baja despacio, cuantas veces puedas.",
+        "escaladores" to "En posición de plancha, lleva las rodillas al pecho alternando rápido, como si corrieras horizontal.",
+        "escaladores continuos" to "Los mismos escaladores pero sin parar, manteniendo un ritmo parejo.",
+        "estiramiento de cuello lento" to "Inclina la cabeza suave hacia un hombro, aguanta, y luego hacia el otro lado.",
+        "estiramiento de cuádriceps de pie" to "De pie, jala un tobillo hacia el glúteo con la mano y sostén el equilibrio.",
+        "estiramiento de espalda sentado" to "Sentado, inclínate hacia adelante con la espalda relajada, dejando que cuelgue el peso.",
+        "estiramiento de isquiotibiales" to "Con una pierna extendida al frente, inclínate hacia esa pierna sin forzar la rodilla.",
+        "estiramiento de muñecas y dedos" to "Extiende un brazo al frente y jala los dedos hacia atrás suavemente con la otra mano.",
+        "estiramiento de psoas en desplante" to "En desplante bajo, empuja la cadera hacia adelante sintiendo el estiramiento en la pierna de atrás.",
+        "estiramiento de cadera" to "En desplante bajo, empuja la cadera hacia adelante sintiendo el estiramiento en la pierna de atrás.",
+        "estiramiento largo hacia el techo" to "Estira ambos brazos hacia arriba y alárgate como si quisieras tocar el techo.",
+        "extensión de brazos al frente" to "Extiende los brazos al frente a la altura del pecho y sostenlos firmes.",
+        "fondos de tríceps en silla" to "Manos en el borde de una silla, baja el cuerpo doblando los codos y sube.",
+        "fondos de tríceps lentos" to "El mismo fondo de tríceps, pero bajando y subiendo despacio y con control.",
+        "gato y vaca en cuatro puntos" to "En cuatro puntos, arquea la espalda hacia arriba y luego hunde el ombligo hacia el piso.",
+        "giro ruso sentado" to "Sentado con el torso inclinado atrás, gira de un lado a otro tocando el piso con las manos.",
+        "golpes al aire" to "Da golpes al aire alternando los brazos, como si estuvieras boxeando.",
+        "hueco abdominal sostenido" to "Acostado boca arriba, despega ligeramente hombros y piernas del piso y aguanta la posición.",
+        "lagartija parado de manos" to "Con los pies apoyados en la pared, baja la cabeza hacia el piso y empuja para subir.",
+        "lagartijas abiertas" to "Manos más separadas que los hombros, baja el pecho al piso y empuja para subir.",
+        "lagartijas con pausa abajo" to "Baja como en una lagartija normal y aguanta un segundo con el pecho cerca del piso antes de subir.",
+        "lagartijas diamante" to "Junta los pulgares e índices formando un diamante bajo el pecho y haz la lagartija.",
+        "lagartijas inclinadas en pared" to "Manos en la pared, cuerpo inclinado, baja el pecho hacia la pared y empuja para regresar.",
+        "lagartijas lentas" to "Baja y sube controlando cada segundo del movimiento, sin dejarte caer.",
+        "lagartijas normales" to "Manos a la altura de los hombros, baja el pecho casi al piso y empuja para subir.",
+        "lagartijas" to "Manos a la altura de los hombros, baja el pecho casi al piso y empuja para subir.",
+        "marcha en el lugar" to "Camina sin avanzar, subiendo bien las rodillas, a tu propio ritmo.",
+        "patada de glúteo en cuatro puntos" to "En cuatro puntos, empuja un talón hacia el techo apretando el glúteo, y cambia de pierna.",
+        "plancha alta" to "Apoyado en manos y puntas de pie, cuerpo recto como tabla, aguanta la posición.",
+        "plancha alta con desplazamiento" to "Desde plancha alta, camina las manos hacia un lado y luego hacia el otro.",
+        "plancha con elevación de pierna" to "En plancha, levanta una pierna recta sin mover la cadera, y cambia de lado.",
+        "plancha con toque de hombro" to "En plancha alta, toca el hombro contrario con una mano sin mover la cadera, alternando.",
+        "plancha firme" to "Apoyado en antebrazos y pies, cuerpo recto, aprieta abdomen y glúteo y aguanta.",
+        "plancha frontal" to "Apoyado en antebrazos, cuerpo en línea recta de cabeza a talones, aguanta sin hundir la cadera.",
+        "plancha lateral alternada" to "Plancha de lado apoyado en un antebrazo, y cambia de lado a la mitad del tiempo.",
+        "plancha sostenida" to "Aguanta la posición de plancha lo más quieto y firme que puedas.",
+        "plancha" to "Apoyado en antebrazos y pies, cuerpo recto, aguanta la posición sin hundir la cadera.",
+        "postura del niño" to "De rodillas, siéntate sobre los talones y estira los brazos al frente, relajando la espalda.",
+        "puente de glúteo" to "Acostado boca arriba, rodillas dobladas, sube la cadera apretando el glúteo y baja.",
+        "puente de glúteo a una pierna" to "Igual que el puente, pero con una pierna estirada en el aire, alternando lado.",
+        "puente de glúteo sostenido" to "Sube la cadera como en el puente y aguanta arriba apretando el glúteo.",
+        "puente suave de espalda" to "Sube la cadera despacio y sin forzar, sintiendo cómo se estira la espalda baja.",
+        "respiración profunda con brazos arriba" to "Sube los brazos mientras inhalas profundo, y bájalos despacio mientras exhalas.",
+        "respiración rápida de pie" to "De pie, inhala y exhala rápido y fuerte varias veces para activar el cuerpo.",
+        "retracción de escápulas" to "De pie o sentado, junta los omóplatos hacia atrás como si sostuvieras un lápiz entre ellos.",
+        "rodillas al pecho corriendo" to "Corre en tu lugar subiendo las rodillas lo más alto que puedas hacia el pecho.",
+        "rotación de cadera de pie" to "De pie, gira la cadera en círculos, la mitad del tiempo para cada lado.",
+        "rotación de columna sentado" to "Sentado con la espalda recta, gira el torso hacia un lado sosteniendo, y luego hacia el otro.",
+        "rotación de hombros" to "Rueda los hombros hacia atrás en círculos amplios y lentos.",
+        "rotación de tobillos" to "Levanta un pie y gira el tobillo en círculos, luego cambia de pie.",
+        "sacudida de brazos y piernas" to "Sacude brazos y piernas sueltos, como para relajar los músculos entre esfuerzos.",
+        "saltos de rana" to "Baja a sentadilla profunda y salta hacia adelante como rana, aterrizando suave.",
+        "sentadilla búlgara en silla" to "Un pie apoyado atrás en una silla, baja con la otra pierna al frente y sube.",
+        "sentadilla isométrica en pared" to "Espalda pegada a la pared, baja como si te sentaras y aguanta ahí quieto.",
+        "sentadilla profunda sostenida" to "Baja a sentadilla lo más profundo que puedas y quédate ahí sin moverte.",
+        "sentadilla sumo" to "Pies bien separados y apuntando afuera, baja como sentadilla normal pero más ancho.",
+        "sentadilla sumo con salto" to "La sentadilla sumo, pero al subir das un pequeño salto.",
+        "sentadillas" to "Pies al ancho de los hombros, baja como si te sentaras en una silla y sube.",
+        "sentadillas a la silla sin peso" to "Baja hasta casi tocar una silla con los glúteos y sube sin sentarte del todo.",
+        "sentadillas con impulso" to "Baja a sentadilla y sube con un poco de impulso, sin llegar a saltar.",
+        "sentadillas con salto" to "Baja a sentadilla y sube saltando, aterrizando suave para la siguiente repetición.",
+        "sentadillas continuas" to "Sentadillas seguidas sin pausa, manteniendo un ritmo constante.",
+        "sentadillas profundas" to "Baja lo más que puedas, más abajo que una sentadilla normal, y sube controlado.",
+        "sentadillas rápidas" to "Sentadillas normales pero a ritmo rápido, sin perder la forma.",
+        "sombra de boxeo" to "Da golpes al aire moviéndote como si estuvieras boxeando contra alguien.",
+        "superman acostado" to "Boca abajo, levanta brazos y piernas al mismo tiempo como si volaras, y baja.",
+        "tijeras acostado" to "Acostado, piernas rectas un poco levantadas, ábrelas y ciérralas como tijeras.",
+        "trote en el lugar" to "Trota sin avanzar, a tu propio ritmo, moviendo bien los brazos.",
+        "posición de caballo" to "Pies separados, rodillas dobladas como si montaras a caballo, espalda recta, aguanta la posición."
+    )
+
+    fun explicacionDe(nombre: String): String = explicaciones[nombre.trim().lowercase()] ?: ""
 
     // ------------------------------------------------------------------ rutinas
 
@@ -20,9 +138,9 @@ object Plantillas {
             "Bajar de peso",
             "Cardio corto y constante. Sudas y el corazón se acelera.",
             listOf(
-                b("Bloque 1", "Brincos de tijera", "Rodillas al pecho corriendo", "Sentadillas rápidas"),
-                b("Bloque 2", "Burpees", "Escaladores", "Brincos altos"),
-                b("Bloque 3", "Sombra de boxeo", "Desplantes alternados", "Plancha con toque de hombro")
+                b("Bloque 1", "Brincos de tijera", "Rodillas al pecho corriendo", "Sentadillas rápidas", "Escaladores", "Brincos altos"),
+                b("Bloque 2", "Burpees", "Sombra de boxeo", "Sentadillas con salto", "Desplantes alternados", "Plancha con toque de hombro"),
+                b("Bloque 3", "Trote en el lugar", "Rodillas al pecho corriendo", "Sentadilla sumo con salto", "Burpees", "Escaladores")
             )
         ),
 
@@ -30,9 +148,9 @@ object Plantillas {
             "Ganar músculo",
             "Fuerza con tu propio peso. Movimientos lentos y controlados.",
             listOf(
-                b("Bloque 1", "Lagartijas lentas", "Sentadillas profundas", "Plancha firme"),
-                b("Bloque 2", "Lagartijas diamante", "Desplantes con pausa", "Puente de glúteo a una pierna"),
-                b("Bloque 3", "Lagartija parado de manos", "Sentadilla búlgara en silla", "Fondos de tríceps en silla")
+                b("Bloque 1", "Lagartijas lentas", "Sentadillas profundas", "Plancha firme", "Desplantes con pausa", "Puente de glúteo a una pierna"),
+                b("Bloque 2", "Lagartijas diamante", "Sentadilla búlgara en silla", "Fondos de tríceps en silla", "Plancha con toque de hombro", "Puente de glúteo sostenido"),
+                b("Bloque 3", "Lagartija parado de manos", "Sentadilla isométrica en pared", "Lagartijas con pausa abajo", "Desplante estático por lado", "Plancha con elevación de pierna")
             )
         ),
 
@@ -40,9 +158,9 @@ object Plantillas {
             "Pecho y brazos",
             "Empuje. Todo lo que trabaja pecho, hombro y tríceps.",
             listOf(
-                b("Bloque 1", "Lagartijas normales", "Lagartijas abiertas", "Plancha alta"),
-                b("Bloque 2", "Lagartijas diamante", "Fondos de tríceps en silla", "Lagartijas inclinadas en pared"),
-                b("Bloque 3", "Lagartija parado de manos", "Lagartijas con pausa abajo", "Círculos de brazos sostenidos")
+                b("Bloque 1", "Lagartijas normales", "Lagartijas abiertas", "Plancha alta", "Fondos de tríceps en silla", "Círculos de brazos sostenidos"),
+                b("Bloque 2", "Lagartijas diamante", "Fondos de tríceps en silla", "Lagartijas inclinadas en pared", "Plancha con toque de hombro", "Extensión de brazos al frente"),
+                b("Bloque 3", "Lagartija parado de manos", "Lagartijas con pausa abajo", "Círculos de brazos sostenidos", "Fondos de tríceps lentos", "Plancha alta con desplazamiento")
             )
         ),
 
@@ -50,9 +168,9 @@ object Plantillas {
             "Piernas y glúteos",
             "Tren inferior. Vas a sentirlas al día siguiente.",
             listOf(
-                b("Bloque 1", "Sentadillas", "Desplantes alternados", "Puente de glúteo"),
-                b("Bloque 2", "Sentadilla sumo", "Sentadilla búlgara en silla", "Elevación de talones"),
-                b("Bloque 3", "Saltos de rana", "Sentadilla isométrica en pared", "Patada de glúteo en cuatro puntos")
+                b("Bloque 1", "Sentadillas", "Desplantes alternados", "Puente de glúteo", "Sentadilla sumo", "Elevación de talones"),
+                b("Bloque 2", "Sentadilla búlgara en silla", "Elevación de talones", "Saltos de rana", "Puente de glúteo a una pierna", "Sentadilla isométrica en pared"),
+                b("Bloque 3", "Saltos de rana", "Sentadilla isométrica en pared", "Patada de glúteo en cuatro puntos", "Desplantes caminando", "Puente de glúteo sostenido")
             )
         ),
 
@@ -60,9 +178,9 @@ object Plantillas {
             "Abdomen y core",
             "Centro fuerte. Cuida la espalda baja, no jalones el cuello.",
             listOf(
-                b("Bloque 1", "Abdominales con los pies", "Plancha frontal", "Tijeras acostado"),
-                b("Bloque 2", "Escaladores", "Plancha lateral alternada", "Elevación de piernas"),
-                b("Bloque 3", "Giro ruso sentado", "Hueco abdominal sostenido", "Plancha con toque de hombro")
+                b("Bloque 1", "Abdominales con los pies", "Plancha frontal", "Tijeras acostado", "Elevación de piernas", "Plancha lateral alternada"),
+                b("Bloque 2", "Escaladores", "Plancha lateral alternada", "Elevación de piernas", "Giro ruso sentado", "Hueco abdominal sostenido"),
+                b("Bloque 3", "Giro ruso sentado", "Hueco abdominal sostenido", "Plancha con toque de hombro", "Tijeras acostado", "Escaladores")
             )
         ),
 
@@ -70,9 +188,9 @@ object Plantillas {
             "Oficina sin sudar",
             "Mueve la sangre sin despeinarte. Sirve con camisa puesta.",
             listOf(
-                b("Bloque 1", "Marcha en el lugar", "Rotación de hombros", "Estiramiento de cuello lento"),
-                b("Bloque 2", "Sentadillas a la silla sin peso", "Elevación de talones parado", "Apertura de pecho en marco de puerta"),
-                b("Bloque 3", "Rotación de cadera de pie", "Estiramiento de muñecas y dedos", "Respiración profunda con brazos arriba")
+                b("Bloque 1", "Marcha en el lugar", "Rotación de hombros", "Estiramiento de cuello lento", "Círculos de muñeca", "Respiración profunda con brazos arriba"),
+                b("Bloque 2", "Sentadillas a la silla sin peso", "Elevación de talones parado", "Apertura de pecho en marco de puerta", "Rotación de cadera de pie", "Estiramiento de espalda sentado"),
+                b("Bloque 3", "Rotación de cadera de pie", "Estiramiento de muñecas y dedos", "Marcha en el lugar", "Elevación de talones parado", "Respiración profunda con brazos arriba")
             )
         ),
 
@@ -80,9 +198,9 @@ object Plantillas {
             "Espalda y postura",
             "Para el que pasa el día sentado. Abre lo que la silla cierra.",
             listOf(
-                b("Bloque 1", "Gato y vaca en cuatro puntos", "Superman acostado", "Retracción de escápulas"),
-                b("Bloque 2", "Estiramiento de psoas en desplante", "Plancha frontal", "Apertura de pecho en pared"),
-                b("Bloque 3", "Rotación de columna sentado", "Puente de glúteo", "Colgarse o estirarse hacia arriba")
+                b("Bloque 1", "Gato y vaca en cuatro puntos", "Superman acostado", "Retracción de escápulas", "Apertura de pecho en pared", "Estiramiento de psoas en desplante"),
+                b("Bloque 2", "Estiramiento de psoas en desplante", "Plancha frontal", "Apertura de pecho en pared", "Superman acostado", "Retracción de escápulas"),
+                b("Bloque 3", "Rotación de columna sentado", "Puente de glúteo", "Colgarse o estirarse hacia arriba", "Gato y vaca en cuatro puntos", "Apertura de pecho en pared")
             )
         ),
 
@@ -90,9 +208,9 @@ object Plantillas {
             "Energía rápida",
             "Despierta el cuerpo en segundos. Ideal para la mañana.",
             listOf(
-                b("Bloque 1", "Brincos de tijera", "Sacudida de brazos y piernas", "Respiración rápida de pie"),
-                b("Bloque 2", "Rodillas al pecho corriendo", "Sentadillas con impulso", "Golpes al aire"),
-                b("Bloque 3", "Brincos altos", "Escaladores", "Estiramiento largo hacia el techo")
+                b("Bloque 1", "Brincos de tijera", "Sacudida de brazos y piernas", "Respiración rápida de pie", "Rodillas al pecho corriendo", "Golpes al aire"),
+                b("Bloque 2", "Rodillas al pecho corriendo", "Sentadillas con impulso", "Golpes al aire", "Brincos de tijera", "Sacudida de brazos y piernas"),
+                b("Bloque 3", "Brincos altos", "Escaladores", "Estiramiento largo hacia el techo", "Sombra de boxeo", "Respiración rápida de pie")
             )
         ),
 
@@ -100,9 +218,9 @@ object Plantillas {
             "Movilidad y flexibilidad",
             "Articulaciones sueltas. Nada de fuerza, todo rango.",
             listOf(
-                b("Bloque 1", "Círculos de cadera", "Círculos de hombro", "Rotación de tobillos"),
-                b("Bloque 2", "Sentadilla profunda sostenida", "Estiramiento de isquiotibiales", "Postura del niño"),
-                b("Bloque 3", "Desplante con rotación", "Puente suave de espalda", "Estiramiento de cuádriceps de pie")
+                b("Bloque 1", "Círculos de cadera", "Círculos de hombro", "Rotación de tobillos", "Rotación de columna sentado", "Postura del niño"),
+                b("Bloque 2", "Sentadilla profunda sostenida", "Estiramiento de isquiotibiales", "Postura del niño", "Círculos de cadera", "Rotación de tobillos"),
+                b("Bloque 3", "Desplante con rotación", "Puente suave de espalda", "Estiramiento de cuádriceps de pie", "Círculos de hombro", "Sentadilla profunda sostenida")
             )
         ),
 
@@ -110,9 +228,9 @@ object Plantillas {
             "Resistencia",
             "Aguante. Bloques largos, ritmo constante, sin parar.",
             listOf(
-                b("Bloque 1", "Trote en el lugar", "Sentadillas continuas", "Plancha sostenida"),
-                b("Bloque 2", "Burpees a ritmo lento", "Escaladores continuos", "Desplantes caminando"),
-                b("Bloque 3", "Brincos de tijera", "Sombra de boxeo", "Sentadilla isométrica en pared")
+                b("Bloque 1", "Trote en el lugar", "Sentadillas continuas", "Plancha sostenida", "Escaladores continuos", "Desplantes caminando"),
+                b("Bloque 2", "Burpees a ritmo lento", "Escaladores continuos", "Desplantes caminando", "Trote en el lugar", "Sentadillas continuas"),
+                b("Bloque 3", "Brincos de tijera", "Sombra de boxeo", "Sentadilla isométrica en pared", "Burpees a ritmo lento", "Plancha sostenida")
             )
         )
     )
@@ -122,72 +240,161 @@ object Plantillas {
     val paquetes: List<Paquete> = listOf(
 
         Paquete(
-            "Motivación y disciplina",
-            "Para los días en que no tienes ganas.",
+            "Mis frases",
+            "Las frases originales, tal como las escribiste.",
             listOf(
-                "No estás esperando el momento. El momento es este.",
-                "La disciplina es acordarte de lo que quieres de verdad.",
-                "Nadie viene a rescatarte, y está bien. Puedes tú.",
-                "Lo difícil hoy es lo normal en tres meses.",
-                "Hazlo cansado. Hazlo con flojera. Nada más hazlo.",
-                "Cada vez que cumples contigo, te vuelves más confiable ante ti mismo.",
-                "El que sigue cuando ya nadie está viendo, gana."
+                "Respira. Concéntrate. Recuerda quién eres y a dónde vas. Eres un victor, y la victoria está dentro de ti, no allá afuera esperándote. Eres un vencedor. No porque nunca te caigas, sino porque siempre te vuelves a levantar.",
+                "Agradece. Conecta con tu ser superior. 1, 1, 9, 8, 1. Dios habita en ti, en tu respiración, en tus manos, en lo que estás construyendo justo ahora. No estás solo en esto y nunca lo has estado.",
+                "Yo soy la fuente en completa expresión. Lo integro, lo comparto, libero todo límite. Manifiesto la realidad perfecta aquí y ahora, en este momento, en este cuerpo, en esta vida que estoy eligiendo.",
+                "Tu percepción cambia tu realidad. Cambia cómo estás percibiendo las cosas hacia lo positivo, porque tu mente es un proyector y afuera solo ves lo que traes adentro. Tu desafío es ser millonario, estar presente y disfrutar de una hermosa familia. Los problemas y los obstáculos no son castigos, son oportunidades disfrazadas.",
+                "Yo soy las riquezas de Dios fluyendo a mis manos y a mi uso, que nada ni nadie puede detener. Lo que es mío llega a tiempo, por el camino correcto, y llega para quedarse.",
+                "Estás creando una nueva identidad. Obsérvala. Obsérvala con calma, sin exigirle que ya esté terminada. Agradécele. Agradécele por aparecer, aunque todavía sea frágil, aunque a ratos se te olvide. Ya empezó.",
+                "Ángeles y guías, les doy permiso de asistirme en todas las áreas de mi vida. Límpienme y protéjanme de toda negatividad, la de afuera y la que yo mismo me genero. Acompáñenme hoy, en lo grande y en lo pequeño.",
+                "5, 2, 0. 7, 4, 1, 8."
+            )
+        ),
+
+        Paquete(
+            "Antinarcisismo",
+            "Duras y honestas. Para reconocer el patrón antes de repetirlo.",
+            listOf(
+                "Los arranques de drama y las exigencias de definiciones en caliente no son amor. Son la forma desesperada de mantener el foco en ti para no aguantar el silencio ni la indiferencia. Cuando sientas esa urgencia de exigir una respuesta ya, esa es justo la señal de esperar. El silencio no te está matando.",
+                "Cuando te topas con el vacío de su rechazo, lo que asusta no es perderla a ella. Es quedarte solo con el trabajo que tienes pendiente contigo. Ese trabajo no lo puede hacer ella ni lo puede hacer la relación: te toca a ti, y se hace despacio.",
+                "Deja de operar bajo esa transacción oculta donde te portas como un santo y tragas saliva esperando que, como recompensa, ella te devuelva el estatus, el aplauso y el perdón. Lo que haces esperando cobro no es un cambio, es una factura con retraso.",
+                "Cada vez que montas un espectáculo, te bajas de la camioneta o le exiges que te valide, estás demostrando que el cambio superficial se cae en cuanto la presión sube y las cosas no salen según tu guion. La prueba no son los días buenos. La prueba es hoy, cuando duele.",
+                "Le estabas pidiendo que fuera tu terapeuta, tu espejo y tu guía correctora. Le estabas delegando a la mujer que lastimaste la tarea de sostener tu conciencia. Esa carga no es de ella. Busca a alguien capacitado para eso y quítasela de encima.",
+                "El costo de seguir forzando una reconciliación desde este lugar es brutal: vas a seguir desgastando tu energía, dándoles a tus hijas un entorno tenso, y volviéndote una presencia resentida en tu propia casa. El ambiente de esa casa hoy depende de ti.",
+                "Cumple con tu parte económica y con tus deberes de padre con absoluta dignidad. Pero deja de mendigar migajas de afecto e intimidad de una mujer que te está pidiendo a gritos un espacio que tú te niegas a soltar. Cumplir no te da derecho a cobrar cercanía.",
+                "La culpa real no se limpia con discursos bonitos ni con promesas de redención de última hora. Se quema lentamente, con una consistencia silenciosa que no cobra facturas ni exige testigos. Nadie tiene que enterarse de que cambiaste. Se nota solo, con el tiempo.",
+                "Cuando notes que las aguas se calman y tu cabeza empiece a susurrarte que ya cambiaste suficiente, o que ella ya debería valorarte, reconoce la trampa. Es el mismo patrón de siempre buscando cobrar su comisión justo cuando bajaste la guardia.",
+                "Deja de buscar una respuesta rápida de sí o no para calmar tu ansiedad. Esa exigencia de certeza es el torniquete que termina de asfixiar cualquier posibilidad de sanación. Aguanta la incertidumbre. Ahí es donde se construye la confianza que rompiste.",
+                "El dolor de saber que ella estuvo con otros no es amor herido. Es la parte de ti que quiere seguir teniendo el control del tablero y ser el centro de su mundo. Reconócelo por lo que es, y luego regresa a lo tuyo.",
+                "Dejar de usar el despecho como combustible significa aceptar que su vida privada ya no te pertenece. Rascarle a esa herida solo demuestra que todavía quieres poseerla en lugar de respetarla. Respetarla se ve así: no preguntar, no revisar, no imaginar."
+            )
+        ),
+
+        Paquete(
+            "Jacobo Grinberg",
+            "Sobre cómo pedir: gratitud, desprendimiento y coherencia interna.",
+            listOf(
+                "No pido desde la carencia ni desde la necesidad desesperada, sino desde el reconocimiento de que lo que necesito ya me ha sido concedido. Esto no es autoengaño ni pensamiento mágico: en las dimensiones más sutiles todas las posibilidades ya existen simultáneamente. Pido como quien le recuerda al universo algo que ya había sido acordado.",
+                "No me pierdo en los detalles externos, sino en la firma energética de lo que deseo. El universo responde mucho más a las frecuencias que a las palabras. Cuando pido salud, genero la sensación de vitalidad completa, en lugar de enumerar los síntomas que quiero eliminar.",
+                "Formulo mi petición con intención clara y, de inmediato, la suelto por completo, confiando en que el universo sabe cómo y cuándo manifestarla. Es el equilibrio perfecto entre intención clara y rendición total. Planto la semilla y confío en la tierra y el agua; si la desenterrara cada día para ver si crece, la mataría.",
+                "Me abro a que la respuesta llegue desde cualquier dirección. El universo tiene recursos que mi mente limitada no puede ni imaginar, y una petición desde la conciencia expandida se propaga por múltiples dimensiones. Cuando me aferro a ideas específicas sobre cómo debe llegar, limito severamente las posibilidades.",
+                "Alineo mi petición no solo con mis deseos conscientes, sino con todos mis niveles. Si conscientemente deseo algo pero inconscientemente lo temo, creo un campo de interferencia: es como tener un freno mientras piso el acelerador. Con honestidad brutal identifico y sano las partes que se resisten, y así la potencia de mi petición se multiplica exponencialmente.",
+                "Reconozco que existe un ritmo en la realidad: ciclos de expansión y contracción, momentos de siembra y momentos de cosecha. Desarrollo la sensibilidad para percibir cuándo las corrientes universales fluyen en la dirección de mis intenciones. Remar contra la corriente agota; cuando aprendo a usarlas, el viaje se vuelve infinitamente más fácil.",
+                "Mis peticiones no son demandas. En lugar de decir dame, digo estoy disponible para servir, si sirve al propósito mayor. Así me convierto en cocreador consciente, no en alguien que ruega favores a una fuerza externa, y activo la reciprocidad cósmica: el universo se vuelve tan generoso conmigo como yo con él.",
+                "El universo no me da lo que pido, me da lo que soy. Mi estado de ser es mi petición más poderosa, mucho más que cualquier palabra. Por eso emano ya una frecuencia de confianza y gratitud, y pido no como quien carece, sino como quien ya lo está viviendo y solo permite que se manifieste.",
+                "No pido cosas aisladas, pido la transformación completa de mi vida en la dirección que deseo. En lugar de pedir simplemente dinero, pido una vida de abundancia: financiera, pero también salud, creatividad y propósito que se refuerzan mutuamente. Ya que estoy transformando mi vida, lo hago completamente, y los cambios resultan más duraderos.",
+                "Las peticiones más irresistibles son las que benefician no solo a mí, sino a la red más amplia. Cuando pido desde una motivación de servicio, trasciendo el ego personal y accedo a fuerzas de apoyo, oportunidades y sincronismos reservados para lo que beneficia a otros. No niego mis necesidades: reconozco el vínculo entre mi bien personal y el bienestar del todo.",
+                "No soy un mendigo del universo pidiendo favores: soy una expresión de la conciencia explorando sus propias posibilidades infinitas. La verdadera maestría no está en obtener siempre lo que quiero, sino en querer siempre lo que recibo. Y muchas veces solo estaba esperando recordar cómo pedir."
+            )
+        ),
+
+        Paquete(
+            "Grabovoi — combo de ventas",
+            "Las ocho secuencias numéricas del combo de ventas, tal cual se dicen, para repetir seguidas.",
+            listOf(
+                "Combo Grabovoi para aumentar las ventas. Ocho secuencias numéricas, en este orden. " +
+                    "Primera secuencia, conexión con el creador: 11981. " +
+                    "Segunda secuencia, atraer circunstancias favorables: 419. 488. 71. " +
+                    "Tercera secuencia, abundancia y prosperidad: 71427321893. " +
+                    "Cuarta secuencia, aumentar ventas: 54121381948. " +
+                    "Quinta secuencia, eliminar obstáculos: 91688. " +
+                    "Sexta secuencia, resultados rápidos: 741. " +
+                    "Séptima secuencia, protección divina: 8888. " +
+                    "Octava y última secuencia, todo es posible: 519. 7148."
+            )
+        ),
+
+        Paquete(
+            "Vendedor tiburón",
+            "Para vendedores: atraer al cliente, manejar objeciones, cerrar y no soltar la mentalidad.",
+            listOf(
+                "Un tiburón no espera a que la comida llegue sola. Se mueve, huele, busca. Hoy tu trabajo no es esperar a que el cliente te llame: es salir a buscarlo. Cada llamada, cada mensaje y cada visita es una brazada más cerca de la venta. Muévete primero y piensa después.",
+                "El cliente no compra un producto, compra la solución a algo que le duele o que quiere lograr. Antes de hablar de lo tuyo, haz preguntas y escucha de verdad. Quien más escucha, más vende. Averigua qué le quita el sueño y entonces muéstrale cómo tu producto se lo resuelve.",
+                "Un no no es un rechazo a ti. Es un todavía no, o un no con la información que tenía. Un tiburón no se ofende cuando la presa se le escapa: sigue nadando hacia la siguiente. Cada no te acerca al sí, porque las ventas son un juego de números y tú estás sumando.",
+                "Para atraer al cliente, primero genera confianza. Sonríe, mira a los ojos, habla claro y no prometas lo que no puedes cumplir. La gente le compra a quien le cae bien y le inspira seguridad. Vende primero la confianza, y el producto se vende casi solo.",
+                "Cuando el cliente dice que está caro, casi nunca habla del precio. Habla de que todavía no ve suficiente valor. No bajes el precio de inmediato: regresa al beneficio. Pregunta qué costaría seguir con el problema que tiene hoy. El valor bien explicado justifica cualquier precio.",
+                "Cerrar la venta no es presionar, es ayudar a decidir. Si ya mostraste el valor y resolviste las dudas, pide la venta con seguridad: «¿Lo dejamos listo hoy?». El que no pide, no recibe. Muchas ventas se pierden porque el vendedor tuvo miedo de hacer la pregunta final.",
+                "Tu energía entra a la sala antes que tú. Si llegas con duda, el cliente duda. Si llegas con seguridad, el cliente se tranquiliza. Respira, endereza la espalda, sube la voz un poco y entra como quien sabe que lo que ofrece de verdad le sirve a la otra persona.",
+                "El dinero está en el seguimiento. La mayoría de las ventas se cierran después del cuarto o quinto contacto, y casi nadie llega hasta ahí. Si tú sí llegas, ya le ganaste a la mayoría. Escribe, llama, vuelve a escribir, con respeto y con constancia. La persistencia amable vende.",
+                "Los grandes vendedores no son los que nunca fallan, son los que se levantan más rápido. Perdiste una venta hoy: analiza qué pasó, aprende una cosa y suéltala. No cargues el rechazo a la siguiente llamada. Cada conversación empieza en cero, con toda la energía.",
+                "Atrae al cliente con una pregunta, no con un discurso. Una buena pregunta abre la puerta: «¿Qué te gustaría lograr con esto?». Cuando el cliente habla de lo que quiere, él mismo se va convenciendo. Tú solo guías la conversación hasta que él mismo dice que sí.",
+                "No vendas a todos, vende a los que de verdad necesitan lo que ofreces. Un buen vendedor sabe descalificar rápido y dedicar su tiempo a quien sí puede y quiere comprar. Tu tiempo es tu dinero. Invierte tu mejor energía en los clientes con más posibilidad de cerrar.",
+                "Manejar una objeción es una oportunidad, no un ataque. Cuando el cliente pone una duda, está interesado, porque si no le importara no diría nada. Escucha, reconoce lo que siente, responde con calma y confirma: «¿Eso resuelve tu duda?». Después de la objeción viene la venta.",
+                "Yo soy un vendedor que aporta valor. No molesto, ayudo. No ruego, propongo. Mi producto cambia la vida de quien lo usa, y es mi responsabilidad llevárselo a quien lo necesita. Hablo con seguridad, cierro con respeto y me preparo todos los días para vender mejor.",
+                "Hoy vas por una meta clara. Escríbela, ponle número y ponle fecha. Divídela en llamadas, citas y cierres por día. Un tiburón no nada sin rumbo: sabe a dónde va. Cuando tu meta es clara, cada acción se vuelve más fácil, y cada día cuenta. Ahora, a cazar la siguiente venta."
+            )
+        ),
+
+        Paquete(
+            "Motivación y disciplina",
+            "Para los días en que no traes ganas de nada.",
+            listOf(
+                "No estás esperando el momento correcto. El momento correcto es este, con todo y el cansancio, con todo y las ganas de no hacerlo. El momento perfecto no existe: existe el que aprovechas y el que dejas pasar.",
+                "La disciplina no es castigarte. La disciplina es acordarte de lo que quieres de verdad cuando el impulso de hoy te está jalando hacia otro lado. Es tu yo de mañana pidiéndote un favor.",
+                "Nadie viene a rescatarte, y está bien que sea así. Significa que no dependes de que alguien más se acuerde de ti, ni de que alguien más crea en ti. Puedes tú. Siempre pudiste.",
+                "Lo que hoy se te hace pesado, en tres meses va a ser lo normal. Tu cuerpo se acostumbra, tu cabeza se acostumbra. Lo único que necesita es que no lo sueltes justo cuando empieza a doler.",
+                "Hazlo cansado. Hazlo con flojera. Hazlo aunque lo hagas mal y aunque lo hagas a medias. Lo que cuenta es que hoy no rompiste la cadena. Mañana lo haces mejor.",
+                "Cada vez que cumples contigo, te vuelves un poco más confiable ante tus propios ojos. Y esa confianza es la que después usas para cosas más grandes. No estás haciendo ejercicio: te estás demostrando algo.",
+                "El que sigue cuando ya nadie está viendo es el que gana. No el más rápido ni el más fuerte, sino el que no se detuvo cuando dejó de haber aplausos, porque nunca los estuvo buscando."
             )
         ),
 
         Paquete(
             "Autoestima",
-            "Para dejar de hablarte como enemigo.",
+            "Para dejar de hablarte como si fueras tu propio enemigo.",
             listOf(
-                "Mereces el mismo respeto que le das a los demás.",
-                "Tu valor no depende de lo que produjiste hoy.",
-                "Háblate como le hablarías a alguien que amas.",
-                "Estás aprendiendo. Eso no es lo mismo que estar fallando.",
-                "Tienes derecho a ocupar espacio y a decir lo que piensas.",
-                "Lo que sientes es válido aunque nadie más lo entienda.",
-                "No tienes que ser perfecto para ser suficiente."
+                "Mereces el mismo respeto que le das a los demás. Te desvives por no fallarle a nadie y contigo eres implacable. Trátate como tratas a la gente que quieres, aunque al principio te sienta raro.",
+                "Tu valor no depende de lo que produjiste hoy. No eres una máquina que vale por su rendimiento. Vales dormido, vales cansado, vales el día que no lograste nada. Eso no se negocia con nadie.",
+                "Háblate como le hablarías a alguien que amas. Si un amigo te contara lo que tú te dices en la cabeza, no lo tolerarías. Entonces no lo toleres cuando la voz es la tuya.",
+                "Estás aprendiendo, y aprender se ve exactamente así: torpe, lento, con retrocesos. Eso no es lo mismo que estar fallando. Nadie que esté cambiando de verdad lo hace de forma limpia.",
+                "Tienes derecho a ocupar espacio. A decir lo que piensas, a pedir lo que necesitas, a poner un límite sin dar diez explicaciones. No estás molestando por existir.",
+                "Lo que sientes es válido aunque nadie más lo entienda, aunque no sepas explicarlo, aunque te digan que estás exagerando. No necesitas la aprobación de nadie para tener derecho a tu propia experiencia.",
+                "No tienes que ser perfecto para ser suficiente. La versión tuya que exiges es una que nunca ha existido y que nadie te pidió. La que sí existe, la de hoy, ya alcanza."
             )
         ),
 
         Paquete(
             "Elevar la vibración",
-            "Para cambiar el estado interno en el momento.",
+            "Para cambiar tu estado interno en el momento.",
             listOf(
-                "Respira profundo. Todo se acomoda desde la calma.",
-                "Estás en sintonía con lo bueno que ya viene en camino.",
-                "Suelta lo pesado. No es tuyo y no lo tienes que cargar.",
-                "Tu energía abre puertas antes de que digas una palabra.",
-                "Donde pones tu atención, ahí crece la vida.",
-                "Agradece antes de tener. Así se llama.",
-                "Estás alineado. Estás en paz. Estás en tu lugar."
+                "Respira profundo y suelta despacio. Todo se acomoda desde la calma, nunca desde la prisa. Lo que decidas apurado lo vas a tener que corregir después; lo que decidas en paz se sostiene solo.",
+                "Estás en sintonía con lo bueno que ya viene en camino. No tienes que jalarlo ni forzarlo. Tu único trabajo es no cerrarte, no amargarte, no ponerte en el lugar donde no puede encontrarte.",
+                "Suelta lo pesado. Eso que traes en el pecho desde la mañana no es tuyo, o si lo fue ya cumplió su función. No lo tienes que cargar todo el día para demostrar que te importa.",
+                "Tu energía abre puertas antes de que digas una palabra. La gente siente cómo llegas mucho antes de escuchar lo que traes que decir. Cuida con qué entras a los lugares.",
+                "Donde pones tu atención, ahí crece la vida. Lo que revisas todos los días se hace grande, sea la queja o sea el plan. Escoge bien qué estás regando con tu tiempo.",
+                "Agradece antes de tener. Así se llama la fe: dar las gracias por lo que todavía no ves, actuar como si ya viniera, y sostener esa certeza cuando nada afuera te la confirma.",
+                "Estás alineado. Estás en paz. Estás exactamente en el lugar donde tienes que estar hoy, aunque no sea donde querías llegar. El camino no se ve completo desde la mitad."
             )
         ),
 
         Paquete(
             "Yo soy",
-            "Decretos en primera persona, en presente.",
+            "Decretos en primera persona y en tiempo presente.",
             listOf(
-                "Yo soy la fuente en completa expresión, aquí y ahora.",
-                "Yo soy salud, fuerza y energía en cada célula de mi cuerpo.",
-                "Yo soy abundancia y todo lo que necesito llega a tiempo.",
-                "Yo soy claridad. Sé qué hacer y lo hago.",
-                "Yo soy paz aun en medio del ruido.",
-                "Yo soy el que decide quién voy a ser hoy.",
-                "Yo soy capaz de sostener todo lo que estoy pidiendo."
+                "Yo soy la fuente en completa expresión, aquí y ahora. No estoy esperando permiso, no estoy esperando el momento. Lo que soy ya está sucediendo mientras respiro.",
+                "Yo soy salud, fuerza y energía en cada célula de mi cuerpo. Mi cuerpo sabe repararse, sabe sostenerme, sabe llevarme a donde tengo que ir. Confío en él y lo cuido.",
+                "Yo soy abundancia, y todo lo que necesito llega a tiempo. Ni antes ni después. No me falta, no me sobra: llega justo cuando lo puedo recibir y sostener.",
+                "Yo soy claridad. Sé qué hacer y lo hago. Cuando no lo sé, me quedo quieto hasta que se aclara, y esa quietud también es parte de saber.",
+                "Yo soy paz aun en medio del ruido. No necesito que todo se calme afuera para calmarme adentro. La paz no me la da el entorno, me la doy yo.",
+                "Yo soy el que decide quién voy a ser hoy. No lo que me pasó, no lo que hice antes, no lo que otros esperan. Hoy elijo otra vez, y puedo elegir distinto.",
+                "Yo soy capaz de sostener todo lo que estoy pidiendo. No pido lo que no podría cuidar. Me estoy preparando para recibirlo y para no perderlo cuando llegue."
             )
         ),
 
         Paquete(
             "Abundancia y dinero",
-            "Para trabajar la relación con el dinero.",
+            "Para trabajar tu relación con el dinero.",
             listOf(
-                "El dinero llega a mis manos y fluye sin esfuerzo.",
-                "Merezco cobrar bien por lo que sé hacer.",
-                "Hay suficiente. No estoy compitiendo por migajas.",
-                "Cada peso que administro bien atrae más.",
-                "Mi trabajo resuelve problemas reales y por eso se paga.",
-                "Me abro a recibir de formas que todavía no imagino.",
-                "La abundancia empieza con lo que hago hoy, no mañana."
+                "El dinero llega a mis manos y fluye sin esfuerzo. No lo persigo con angustia ni lo agarro con miedo. Entra, hace su trabajo, y vuelve a entrar porque sé moverlo.",
+                "Merezco cobrar bien por lo que sé hacer. Lo que ofrezco tiene valor y no tengo que disculparme por ponerle precio. Regalar mi trabajo no me hace más noble, me hace más pobre.",
+                "Hay suficiente. No estoy compitiendo por migajas ni peleándome un lugar que ya estaba ocupado. El mundo es más grande que el miedo que me contaron.",
+                "Cada peso que administro bien atrae más. No se trata de cuánto entra, sino de qué hago con lo que entra. La abundancia empieza en el orden, no en la cantidad.",
+                "Mi trabajo resuelve problemas reales, y por eso se paga. No estoy pidiendo un favor cuando cobro. Estoy intercambiando algo que sirve por algo que necesito.",
+                "Me abro a recibir de formas que todavía no imagino. No tiene que llegar por donde yo creo. Suelto el control sobre el cómo y me quedo firme en el qué.",
+                "La abundancia empieza con lo que hago hoy, no mañana. No con el negocio que voy a poner, no cuando se acomoden las cosas. Con lo de hoy, con lo que tengo en la mano ahorita."
             )
         ),
 
@@ -195,41 +402,41 @@ object Plantillas {
             "Gratitud y presencia",
             "Para aterrizar y dejar de correr.",
             listOf(
-                "Estoy aquí. Esto es lo único que existe.",
-                "Gracias por el cuerpo que me está sosteniendo ahorita.",
-                "Gracias por la gente que me quiere aunque no siempre lo diga.",
-                "Nada de lo que estoy persiguiendo vale más que este momento.",
-                "Ya tengo cosas que alguna vez pedí con desesperación.",
-                "Respira. Suelta los hombros. Aquí no falta nada.",
-                "El presente es el único lugar donde puedo actuar."
+                "Estoy aquí. Esto es lo único que existe. El resto es memoria o es imaginación, y ninguna de las dos está pasando ahora. Vuelve al cuerpo, vuelve a la respiración, vuelve a este cuarto.",
+                "Gracias por el cuerpo que me está sosteniendo ahorita. Late sin que se lo pida, respira mientras yo pienso en otras cosas, me carga todos los días sin quejarse. Hoy lo reconozco.",
+                "Gracias por la gente que me quiere, aunque no siempre sepa demostrarlo y aunque yo no siempre sepa recibirlo. No estoy tan solo como se siente en los días malos.",
+                "Nada de lo que estoy persiguiendo vale más que este momento. Voy a llegar y va a haber otra cosa que perseguir. Si no aprendo a estar aquí, no voy a saber estar allá tampoco.",
+                "Ya tengo cosas que alguna vez pedí con desesperación. Se me olvidan porque se volvieron normales. Hoy me acuerdo de al menos una y le doy las gracias como el día que la pedí.",
+                "Respira. Suelta los hombros. Afloja la mandíbula. Aquí, en este segundo, no falta nada. El problema que traes en la cabeza no está sucediendo en esta habitación.",
+                "El presente es el único lugar donde puedo actuar. En el pasado ya no alcanzo nada y en el futuro todavía no llego. Todo mi poder está en lo que haga en los próximos cinco minutos."
             )
         ),
 
         Paquete(
             "Enfoque y trabajo profundo",
-            "Para volver a la tarea después de la frase.",
+            "Para volver a la tarea justo después de la frase.",
             listOf(
-                "Una sola cosa. La que importa. Ahora.",
-                "El teléfono no se va a ir. La concentración sí.",
-                "Terminar vale más que empezar bonito.",
-                "No busques la idea perfecta. Avanza con la que tienes.",
-                "Dos horas enfocado valen más que ocho distraído.",
-                "Si no sabes qué sigue, escribe el siguiente paso más chico.",
-                "El trabajo profundo se defiende. Nadie lo va a defender por ti."
+                "Una sola cosa. La que importa. Ahora. No la lista completa, no todo el proyecto: la siguiente acción concreta. Escríbela si hace falta y ve por ella.",
+                "El teléfono no se va a ir a ningún lado. La concentración sí. Tardas veinte minutos en recuperarla y la pierdes en dos segundos. Piensa si vale la pena ese cambio.",
+                "Terminar vale más que empezar bonito. Un trabajo entregado a medias supera a uno perfecto que sigue en tu cabeza. Lo terminado se puede mejorar; lo que no existe, no.",
+                "No busques la idea perfecta. Avanza con la que tienes, aunque sepas que es mejorable. La claridad llega haciendo, no pensando: se te va a aclarar a la mitad del camino.",
+                "Dos horas enfocado valen más que ocho distraído. No midas el día por las horas que estuviste sentado, sino por los ratos en que de verdad estuviste ahí.",
+                "Si no sabes qué sigue, escribe el paso más chico que se te ocurra. Tan chico que dé risa. La parálisis casi siempre es que el siguiente paso lo estás pensando demasiado grande.",
+                "El trabajo profundo se defiende. Nadie lo va a defender por ti, ni tu familia, ni tus clientes, ni tus notificaciones. Si no cierras la puerta tú, no se cierra."
             )
         ),
 
         Paquete(
             "Calma y respiración",
-            "Para bajar revoluciones cuando trae uno el nudo.",
+            "Para bajar revoluciones cuando traes el nudo.",
             listOf(
-                "Inhala cuatro. Sostén cuatro. Exhala seis. Otra vez.",
-                "La ansiedad es prisa. No hay prisa.",
-                "Puedes sentir miedo y aun así seguir.",
-                "Suelta la mandíbula. Baja los hombros. Afloja las manos.",
-                "Esto también va a pasar, como todo lo anterior.",
-                "No tienes que resolverlo todo hoy.",
-                "Tu cuerpo sabe calmarse. Nada más dale un minuto."
+                "Inhala contando cuatro. Sostén cuatro. Exhala contando seis. Otra vez. La exhalación larga es la que le avisa al cuerpo que puede bajar la guardia. Dale tres rondas antes de seguir.",
+                "La ansiedad es prisa, nada más. Es el cuerpo tratando de resolver hoy algo que no toca hoy. No hay prisa. Lo urgente casi nunca es tan urgente como se siente.",
+                "Puedes sentir miedo y aun así seguir. Nadie hace las cosas importantes con el miedo apagado. Lo haces con el miedo puesto, y así cuenta igual, o cuenta más.",
+                "Suelta la mandíbula. Baja los hombros. Afloja las manos. Llevas horas apretando cosas que no hacía falta apretar, y tu cuerpo se cansa de sostener esa tensión.",
+                "Esto también va a pasar, como pasó todo lo anterior. Ninguna de las cosas que te tuvieron así antes sigue teniéndote así hoy. Se te olvida porque cuando duele parece permanente.",
+                "No tienes que resolverlo todo hoy. Hoy nada más te toca la parte de hoy. Lo demás va a seguir ahí mañana y vas a tener más fuerza para verlo.",
+                "Tu cuerpo sabe calmarse solo, es lo que hace todo el tiempo sin que te enteres. Nada más dale un minuto sin interrumpirlo, sin pensarle, sin exigirle que sea rápido."
             )
         ),
 
@@ -237,13 +444,13 @@ object Plantillas {
             "Mentalidad estoica",
             "Inspiradas en Marco Aurelio y Epicteto, escritas en palabras propias.",
             listOf(
-                "Lo que no depende de ti, suéltalo. Lo que sí, hazlo bien.",
-                "No es el problema el que te tumba, es lo que te dices del problema.",
-                "El obstáculo enseña el camino.",
-                "Hoy vas a toparte con gente difícil. Ya lo sabes, no te sorprendas.",
-                "Vive como si esto fuera lo último que haces, sin drama y sin prisa.",
-                "Nadie te puede quitar la forma en que respondes.",
-                "Deja de discutir cómo debería ser un hombre bueno. Sé uno."
+                "Lo que no depende de ti, suéltalo. Lo que sí depende de ti, hazlo bien. Casi todo tu sufrimiento vive en la frontera entre esas dos cosas, tratando de controlar lo que nunca fue tuyo.",
+                "No es el problema el que te tumba, es lo que te dices del problema. Dos personas viven lo mismo y una se levanta y la otra no. La diferencia está en la historia que se cuentan.",
+                "El obstáculo enseña el camino. Lo que se te atraviesa no está impidiendo tu avance: está mostrándote por dónde tienes que crecer. Si no hubiera resistencia, no habría fuerza.",
+                "Hoy te vas a topar con gente difícil, con groserías y con gente que no cumple. Ya lo sabes de antemano, así que no te agarre de sorpresa ni te arruine el día.",
+                "Vive como si esto fuera lo último que haces, pero sin drama y sin prisa. No significa correr: significa hacerlo con atención, como si valiera la pena hacerlo bien.",
+                "Te pueden quitar el trabajo, el dinero, la salud y la razón. Lo único que nadie te puede quitar es la forma en que respondes a lo que te pasa. Ahí vives tú.",
+                "Deja de discutir cómo debería ser un hombre bueno. Sé uno. Las horas que gastas explicando en quién te vas a convertir son las mismas que podrías gastar convirtiéndote."
             )
         )
     )

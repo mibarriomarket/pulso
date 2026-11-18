@@ -8,10 +8,11 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
-data class Ejercicio(val nombre: String, val seg: Int)
+data class Ejercicio(val nombre: String, val seg: Int, val explicacion: String = "")
 data class Bloque(val nombre: String, val ejs: List<Ejercicio>)
 data class Frase(val id: String, val texto: String, val audio: String?)
 data class Perfil(val id: String, val nombre: String)
+data class ListaGuardada(val nombre: String, val frases: List<Frase>)
 
 object Config {
 
@@ -19,6 +20,9 @@ object Config {
 
     /** El ciclo es fijo: 25 minutos de enfoque, 5 de movimiento. */
     const val MINUTOS_ENFOQUE = 25
+
+    /** Descanso por defecto entre ejercicios, en segundos. */
+    const val DESCANSO_DEFECTO = 15
 
     fun p(c: Context): SharedPreferences = c.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
 
@@ -109,7 +113,7 @@ object Config {
         val lista = perfiles(c)
         if (lista.size <= 1) return false
         val ed = p(c).edit()
-        for (clave in listOf("bloques", "frases", "avisoFrases", "cuentaSegundo", "avisoDiez", "vibrar")) {
+        for (clave in listOf("bloques", "frases", "avisoFrases", "cuentaSegundo", "avisoDiez", "vibrar", "descansoSeg", "voz")) {
             ed.remove(id + "__" + clave)
         }
         ed.apply()
@@ -127,38 +131,62 @@ object Config {
     fun cuentaSegundo(c: Context) = p(c).getBoolean(k(c, "cuentaSegundo"), true)
     fun avisoDiez(c: Context) = p(c).getBoolean(k(c, "avisoDiez"), true)
     fun vibrar(c: Context) = p(c).getBoolean(k(c, "vibrar"), true)
+    fun descansoSeg(c: Context) = p(c).getInt(k(c, "descansoSeg"), DESCANSO_DEFECTO)
 
-    fun guardarNumeros(c: Context, aviso: Int, seg: Boolean, diez: Boolean, vib: Boolean) {
+    /** Voz elegida para este perfil (el nombre interno de la voz de Android). Null = automática. */
+    fun vozElegida(c: Context): String? = p(c).getString(k(c, "voz"), null)
+
+    fun guardarVoz(c: Context, nombreVoz: String?) {
+        val ed = p(c).edit()
+        if (nombreVoz == null) ed.remove(k(c, "voz")) else ed.putString(k(c, "voz"), nombreVoz)
+        ed.apply()
+    }
+
+    fun guardarNumeros(c: Context, aviso: Int, seg: Boolean, diez: Boolean, vib: Boolean, descanso: Int) {
         p(c).edit()
             .putInt(k(c, "avisoFrases"), if (aviso > 0) aviso else 4)
             .putBoolean(k(c, "cuentaSegundo"), seg)
             .putBoolean(k(c, "avisoDiez"), diez)
             .putBoolean(k(c, "vibrar"), vib)
+            .putInt(k(c, "descansoSeg"), if (descanso >= 0) descanso else DESCANSO_DEFECTO)
             .apply()
     }
 
     // ================================================================ bloques
 
+    /**
+     * Cinco ejercicios por bloque, 45 segundos cada uno por defecto.
+     * Con 15 segundos de descanso entre ellos, cinco ejercicios de 45
+     * llenan exactamente los cinco minutos del bloque (5 × 60 = 300).
+     */
+    private fun ej(nombre: String): Ejercicio = Ejercicio(nombre, 45, Plantillas.explicacionDe(nombre))
+
     private fun bloquesPorDefecto(): List<Bloque> = listOf(
         Bloque(
             "Bloque 1", listOf(
-                Ejercicio("Sentadillas", 100),
-                Ejercicio("Lagartijas", 100),
-                Ejercicio("Plancha y estiramiento de cadera", 100)
+                ej("Sentadillas"),
+                ej("Lagartijas"),
+                ej("Plancha"),
+                ej("Desplantes alternados"),
+                ej("Estiramiento de cadera")
             )
         ),
         Bloque(
             "Bloque 2", listOf(
-                Ejercicio("Burpees", 100),
-                Ejercicio("Brincos altos", 100),
-                Ejercicio("Posición de caballo", 100)
+                ej("Burpees"),
+                ej("Brincos altos"),
+                ej("Posición de caballo"),
+                ej("Escaladores"),
+                ej("Sombra de boxeo")
             )
         ),
         Bloque(
             "Bloque 3", listOf(
-                Ejercicio("Lagartija parado de manos", 100),
-                Ejercicio("Saltos de rana", 100),
-                Ejercicio("Abdominales con los pies", 100)
+                ej("Lagartija parado de manos"),
+                ej("Saltos de rana"),
+                ej("Abdominales con los pies"),
+                ej("Giro ruso sentado"),
+                ej("Plancha lateral alternada")
             )
         )
     )
@@ -174,7 +202,10 @@ object Config {
                 val ejs = ArrayList<Ejercicio>()
                 for (j in 0 until ejsArr.length()) {
                     val e = ejsArr.getJSONObject(j)
-                    ejs.add(Ejercicio(e.getString("n"), e.getInt("s")))
+                    val nombreEj = e.getString("n")
+                    val expGuardada = e.optString("e", "")
+                    val exp = expGuardada.ifBlank { Plantillas.explicacionDe(nombreEj) }
+                    ejs.add(Ejercicio(nombreEj, e.getInt("s"), exp))
                 }
                 if (ejs.isNotEmpty()) out.add(Bloque(o.getString("nombre"), ejs))
             }
@@ -194,6 +225,7 @@ object Config {
                 val eo = JSONObject()
                 eo.put("n", e.nombre)
                 eo.put("s", e.seg)
+                eo.put("e", e.explicacion)
                 ejs.put(eo)
             }
             o.put("ejs", ejs)
@@ -203,31 +235,35 @@ object Config {
     }
 
     fun textoDeBloque(b: Bloque): String =
-        b.ejs.joinToString("\n") { it.nombre + " | " + it.seg }
+        b.ejs.joinToString("\n") {
+            it.nombre + " | " + it.seg + (if (it.explicacion.isNotBlank()) " | " + it.explicacion else "")
+        }
 
     fun bloqueDeTexto(nombre: String, texto: String): Bloque {
         val ejs = texto.split("\n")
             .map { it.trim() }
             .filter { it.isNotEmpty() }
             .map { linea ->
-                val partes = linea.split("|")
+                val partes = linea.split("|", limit = 3)
                 val n = if (partes[0].trim().isEmpty()) "Movimiento" else partes[0].trim()
-                val s = if (partes.size > 1) partes[1].trim().toIntOrNull() ?: 100 else 100
-                Ejercicio(n, if (s > 0) s else 100)
+                val s = if (partes.size > 1) partes[1].trim().toIntOrNull() ?: 45 else 45
+                val escrita = if (partes.size > 2) partes[2].trim() else ""
+                val exp = if (escrita.isNotBlank()) escrita else Plantillas.explicacionDe(n)
+                Ejercicio(n, if (s > 0) s else 45, exp)
             }
-        return Bloque(nombre, if (ejs.isEmpty()) listOf(Ejercicio("Movimiento", 100)) else ejs)
+        return Bloque(nombre, if (ejs.isEmpty()) listOf(Ejercicio("Movimiento", 45)) else ejs)
     }
 
     // ================================================================ frases
 
     private fun frasesPorDefecto(): List<Frase> = listOf(
-        "Respira, concéntrate, recuerda quién eres y a dónde vas. Eres un victor, la victoria está en ti. Eres un vencedor.",
-        "Agradece, conecta tu ser superior. 1, 1, 9, 8, 1. Dios habita en ti.",
-        "Yo soy la fuente en completa expresión, lo integro, lo comparto, libero todo límite, manifiesto la realidad perfecta aquí y ahora.",
-        "Tu percepción cambia tu realidad. Cambia cómo estás percibiendo las cosas a positivo. Tu mente es un proyector. Tu desafío es ser millonario, estar presente y disfrutar de una hermosa familia. Los problemas y obstáculos son una oportunidad.",
-        "Yo soy las riquezas de Dios fluyendo a mis manos y uso, que nada ni nadie puede detener.",
-        "Estás creando una nueva identidad. Obsérvala, obsérvala. Agradécele, agradécele.",
-        "Ángeles y guías, les doy permiso de asistirme en todas las áreas de mi vida. Límpienme y protéjanme de toda negatividad.",
+        "Respira. Concéntrate. Recuerda quién eres y a dónde vas. Eres un victor, y la victoria está dentro de ti, no allá afuera esperándote. Eres un vencedor. No porque nunca te caigas, sino porque siempre te vuelves a levantar.",
+        "Agradece. Conecta con tu ser superior. 1, 1, 9, 8, 1. Dios habita en ti, en tu respiración, en tus manos, en lo que estás construyendo justo ahora. No estás solo en esto y nunca lo has estado.",
+        "Yo soy la fuente en completa expresión. Lo integro, lo comparto, libero todo límite. Manifiesto la realidad perfecta aquí y ahora, en este momento, en este cuerpo, en esta vida que estoy eligiendo.",
+        "Tu percepción cambia tu realidad. Cambia cómo estás percibiendo las cosas hacia lo positivo, porque tu mente es un proyector y afuera solo ves lo que traes adentro. Tu desafío es ser millonario, estar presente y disfrutar de una hermosa familia. Los problemas y los obstáculos no son castigos, son oportunidades disfrazadas.",
+        "Yo soy las riquezas de Dios fluyendo a mis manos y a mi uso, que nada ni nadie puede detener. Lo que es mío llega a tiempo, por el camino correcto, y llega para quedarse.",
+        "Estás creando una nueva identidad. Obsérvala. Obsérvala con calma, sin exigirle que ya esté terminada. Agradécele. Agradécele por aparecer, aunque todavía sea frágil, aunque a ratos se te olvide. Ya empezó.",
+        "Ángeles y guías, les doy permiso de asistirme en todas las áreas de mi vida. Límpienme y protéjanme de toda negatividad, la de afuera y la que yo mismo me genero. Acompáñenme hoy, en lo grande y en lo pequeño.",
         "5, 2, 0. 7, 4, 1, 8."
     ).mapIndexed { i, t -> Frase("f" + (i + 1), t, null) }
 
@@ -257,6 +293,62 @@ object Config {
             arr.put(o)
         }
         p(c).edit().putString(k(c, "frases"), arr.toString()).apply()
+    }
+
+    // ================================================================ mis listas de frases
+
+    /** Las listas que el usuario guarda. Son compartidas entre todos los perfiles. */
+    fun misListas(c: Context): List<ListaGuardada> {
+        val txt = p(c).getString("misListas", null) ?: return emptyList()
+        return try {
+            val arr = JSONArray(txt)
+            val out = ArrayList<ListaGuardada>()
+            for (i in 0 until arr.length()) {
+                val o = arr.getJSONObject(i)
+                val fr = o.getJSONArray("frases")
+                val lista = ArrayList<Frase>()
+                for (j in 0 until fr.length()) {
+                    val f = fr.getJSONObject(j)
+                    val audio = if (f.isNull("audio")) null else f.getString("audio")
+                    lista.add(Frase(f.getString("id"), f.getString("texto"), audio))
+                }
+                out.add(ListaGuardada(o.getString("nombre"), lista))
+            }
+            out
+        } catch (e: Exception) {
+            emptyList()
+        }
+    }
+
+    private fun escribirListas(c: Context, listas: List<ListaGuardada>) {
+        val arr = JSONArray()
+        for (l in listas) {
+            val o = JSONObject()
+            o.put("nombre", l.nombre)
+            val fr = JSONArray()
+            for (f in l.frases) {
+                val fo = JSONObject()
+                fo.put("id", f.id)
+                fo.put("texto", f.texto)
+                if (f.audio == null) fo.put("audio", JSONObject.NULL) else fo.put("audio", f.audio)
+                fr.put(fo)
+            }
+            o.put("frases", fr)
+            arr.put(o)
+        }
+        p(c).edit().putString("misListas", arr.toString()).apply()
+    }
+
+    /** Guarda con ese nombre. Si ya existía una lista igual, la reemplaza. */
+    fun guardarLista(c: Context, nombre: String, frases: List<Frase>) {
+        if (nombre.isBlank()) return
+        val actuales = ArrayList(misListas(c).filter { it.nombre != nombre })
+        actuales.add(ListaGuardada(nombre, frases))
+        escribirListas(c, actuales)
+    }
+
+    fun borrarLista(c: Context, nombre: String) {
+        escribirListas(c, misListas(c).filter { it.nombre != nombre })
     }
 
     // ================================================================ repeticiones

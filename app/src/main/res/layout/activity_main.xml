@@ -131,7 +131,7 @@
             android:textColor="#7A6E8A"
             android:textSize="12sp" />
 
-        <!-- ============ frases: tiempo ============ -->
+        <!-- ============ avisos ============ -->
 
         <TextView
             android:layout_width="wrap_content"
@@ -141,22 +141,60 @@
             android:textColor="#E5A93C"
             android:textSize="17sp" />
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:text="Sale una frase cada cuántos minutos"
-            android:textColor="#9C8FAE"
-            android:textSize="12sp" />
-
-        <EditText
-            android:id="@+id/edAviso"
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="@drawable/fondo_campo"
-            android:inputType="number"
-            android:padding="10dp"
-            android:textColor="#F0E7DC" />
+            android:layout_marginTop="8dp"
+            android:orientation="horizontal">
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Frase cada (min)"
+                    android:textColor="#9C8FAE"
+                    android:textSize="12sp" />
+
+                <EditText
+                    android:id="@+id/edAviso"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/fondo_campo"
+                    android:inputType="number"
+                    android:padding="10dp"
+                    android:textColor="#F0E7DC" />
+            </LinearLayout>
+
+            <Space android:layout_width="12dp" android:layout_height="1dp" />
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Descanso entre ejercicios (seg)"
+                    android:textColor="#9C8FAE"
+                    android:textSize="12sp" />
+
+                <EditText
+                    android:id="@+id/edDescanso"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/fondo_campo"
+                    android:inputType="number"
+                    android:padding="10dp"
+                    android:textColor="#F0E7DC" />
+            </LinearLayout>
+        </LinearLayout>
 
         <CheckBox
             android:id="@+id/chkSegundo"
@@ -180,6 +218,42 @@
             android:text="Vibrar en los cambios"
             android:textColor="#F0E7DC" />
 
+        <!-- ============ voz ============ -->
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="26dp"
+            android:text="Voz"
+            android:textColor="#E5A93C"
+            android:textSize="17sp" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Elige con cuál de las voces en español quieres que hable Pulso. Salen primero las latinoamericanas. Cuántas aparezcan depende de tu teléfono; algunas dicen &quot;necesita internet&quot; porque son de Google en la nube. Es distinto por cada perfil."
+            android:textColor="#9C8FAE"
+            android:textSize="12sp" />
+
+        <TextView
+            android:id="@+id/txtVoz"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:text="Voz actual: automática"
+            android:textColor="#F0E7DC"
+            android:textSize="13sp" />
+
+        <Button
+            android:id="@+id/btnVoz"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:background="@drawable/fondo_boton_hueco"
+            android:text="Elegir voz"
+            android:textColor="#58C0A0"
+            android:textSize="12sp" />
+
         <!-- ============ bloques ============ -->
 
         <TextView
@@ -193,7 +267,7 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Rotan uno por ciclo. Una línea por ejercicio: nombre | segundos"
+            android:text="Rotan uno por ciclo. Cinco líneas, una por ejercicio: nombre | segundos de trabajo | cómo se hace (opcional). Entre cada uno se mete el descanso que pusiste arriba, y la app dice en voz alta cuál sigue y cómo se hace mientras descansas. Si conoce el ejercicio, ya sabe cómo explicarlo aunque dejes ese último dato vacío."
             android:textColor="#9C8FAE"
             android:textSize="12sp" />
 
@@ -247,6 +321,35 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/btnGuardarLista"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:background="@drawable/fondo_boton_hueco"
+                android:text="Guardar esta lista"
+                android:textColor="#E5A93C"
+                android:textSize="11sp" />
+
+            <Space android:layout_width="8dp" android:layout_height="1dp" />
+
+            <Button
+                android:id="@+id/btnCargarLista"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:background="@drawable/fondo_boton_hueco"
+                android:text="Mis listas"
+                android:textColor="#E5A93C"
+                android:textSize="11sp" />
+        </LinearLayout>
 
         <Button
             android:id="@+id/btnAgregarFrase"
