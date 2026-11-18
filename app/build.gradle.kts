@@ -11,8 +11,8 @@ android {
         applicationId = "com.yoshi.pulso"
         minSdk = 26
         targetSdk = 34
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = 10
+        versionName = "1.9"
     }
 
     buildTypes {
